@@ -1,0 +1,53 @@
+.env
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.so
+.coverage
+.pytest_cache/
+dist/
+build/
+*.egg-info/
+
+# Virtual environments
+venv/
+.venv/
+ENV/
+env.bak/
+venv.bak/
+
+# Flask
+instance/
+.webassets-cache
+
+# Environment variables
+.env.local
+.env.production
+.env.test
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Temporary files
+*.tmp
+*.temp
+temp_*
+
+# Logs
+*.log
+
+# Demo output files
+demo_case_study.txt
+*.txt
+
+# Node modules (if any)
+node_modules/

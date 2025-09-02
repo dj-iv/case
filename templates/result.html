@@ -1,0 +1,202 @@
+{% extends "base.html" %}
+
+{% block title %}Case Study Generated - {{ client_name }}{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            
+            <div class="text-center mb-4">
+                <h1 class="display-5 text-success">
+                    <i class="bi bi-check-circle"></i> Case Study Generated Successfully!
+                </h1>
+                <p class="lead">Your AI-generated case study for <strong>{{ client_name }}</strong> is ready.</p>
+            </div>
+
+            <div class="row mb-4">
+                <div class="col-md-4">
+                    <a href="{{ url_for('index') }}" class="btn btn-outline-primary">
+                        <i class="bi bi-arrow-left"></i> Generate Another
+                    </a>
+                </div>
+                <div class="col-md-8 text-end">
+                    <a href="{{ url_for('website_preview_direct') }}" class="btn btn-info me-2" target="_blank">
+                        <i class="bi bi-display"></i> Website Preview
+                    </a>
+                    <button class="btn btn-success me-2" onclick="copyToClipboard()">
+                        <i class="bi bi-clipboard"></i> Copy WordPress Content
+                    </button>
+                    <button class="btn btn-primary" onclick="downloadText()">
+                        <i class="bi bi-download"></i> Download
+                    </button>
+                </div>
+            </div>
+
+            <!-- Preview Section -->
+            <div class="card mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h3 class="card-title mb-0">
+                        <i class="bi bi-eye"></i> Preview
+                    </h3>
+                </div>
+                <div class="card-body">
+                    <h4 class="text-primary mb-4">{{ case_study.title }}</h4>
+                    
+                    {% for section in case_study.sections %}
+                    <div class="mb-4">
+                        <h5 class="text-secondary">{{ section.title }}</h5>
+                        <div class="border-start border-primary ps-3">
+                            <p class="text-muted small">{{ section.content[:200] }}{% if section.content|length > 200 %}...{% endif %}</p>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- WordPress Content Section -->
+            <div class="card">
+                <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center">
+                    <h3 class="card-title mb-0">
+                        <i class="bi bi-wordpress"></i> WordPress Block Content
+                    </h3>
+                    <span class="badge bg-success">Ready to Paste</span>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-info">
+                        <i class="bi bi-info-circle"></i>
+                        <strong>Instructions:</strong> Copy the content below and paste it directly into your WordPress block editor. 
+                        The content is already formatted with WordPress Gutenberg blocks.
+                    </div>
+                    
+                    <div class="position-relative">
+                        <textarea 
+                            id="wordpressContent" 
+                            class="form-control" 
+                            rows="20" 
+                            readonly 
+                            style="font-family: 'Courier New', monospace; font-size: 12px;"
+                        >{{ case_study.wordpress_content }}</textarea>
+                        
+                        <button 
+                            class="btn btn-outline-secondary btn-sm position-absolute top-0 end-0 m-2" 
+                            onclick="toggleWrap()"
+                            id="wrapToggle"
+                        >
+                            <i class="bi bi-text-wrap"></i> Toggle Wrap
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Section Details -->
+            <div class="mt-4">
+                <h4 class="text-primary mb-3">
+                    <i class="bi bi-list-check"></i> Generated Sections
+                </h4>
+                
+                <div class="accordion" id="sectionsAccordion">
+                    {% for section in case_study.sections %}
+                    <div class="accordion-item">
+                        <h2 class="accordion-header" id="heading{{ loop.index }}">
+                            <button class="accordion-button {% if not loop.first %}collapsed{% endif %}" 
+                                    type="button" 
+                                    data-bs-toggle="collapse" 
+                                    data-bs-target="#collapse{{ loop.index }}" 
+                                    aria-expanded="{% if loop.first %}true{% else %}false{% endif %}" 
+                                    aria-controls="collapse{{ loop.index }}">
+                                <i class="bi bi-{% if section.section_type == 'summary' %}file-text{% elif section.section_type == 'client' %}building{% elif section.section_type == 'challenges' %}exclamation-triangle{% elif section.section_type == 'solution' %}gear{% else %}graph-up{% endif %} me-2"></i>
+                                {{ section.title }}
+                            </button>
+                        </h2>
+                        <div id="collapse{{ loop.index }}" 
+                             class="accordion-collapse collapse {% if loop.first %}show{% endif %}" 
+                             aria-labelledby="heading{{ loop.index }}" 
+                             data-bs-parent="#sectionsAccordion">
+                            <div class="accordion-body">
+                                <div style="white-space: pre-line;">{{ section.content }}</div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<!-- Success Toast -->
+<div class="toast-container position-fixed bottom-0 end-0 p-3">
+    <div id="copyToast" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
+        <div class="toast-header">
+            <i class="bi bi-check-circle text-success me-2"></i>
+            <strong class="me-auto">Success</strong>
+            <button type="button" class="btn-close" data-bs-dismiss="toast"></button>
+        </div>
+        <div class="toast-body">
+            Content copied to clipboard! Ready to paste into WordPress.
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+let wrapEnabled = false;
+
+function copyToClipboard() {
+    const textarea = document.getElementById('wordpressContent');
+    textarea.select();
+    textarea.setSelectionRange(0, 99999); // For mobile devices
+    
+    navigator.clipboard.writeText(textarea.value).then(function() {
+        // Show success toast
+        const toast = new bootstrap.Toast(document.getElementById('copyToast'));
+        toast.show();
+    }).catch(function(err) {
+        // Fallback for older browsers
+        document.execCommand('copy');
+        const toast = new bootstrap.Toast(document.getElementById('copyToast'));
+        toast.show();
+    });
+}
+
+function toggleWrap() {
+    const textarea = document.getElementById('wordpressContent');
+    const button = document.getElementById('wrapToggle');
+    
+    wrapEnabled = !wrapEnabled;
+    
+    if (wrapEnabled) {
+        textarea.style.whiteSpace = 'normal';
+        textarea.style.wordWrap = 'break-word';
+        button.innerHTML = '<i class="bi bi-text-left"></i> Toggle Wrap';
+    } else {
+        textarea.style.whiteSpace = 'pre';
+        textarea.style.wordWrap = 'normal';
+        button.innerHTML = '<i class="bi bi-text-wrap"></i> Toggle Wrap';
+    }
+}
+
+function downloadText() {
+    const content = document.getElementById('wordpressContent').value;
+    const title = "{{ case_study.title }}".replace(/[^a-z0-9]/gi, '_').toLowerCase();
+    const filename = `case_study_${title}.txt`;
+    
+    const element = document.createElement('a');
+    element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(content));
+    element.setAttribute('download', filename);
+    element.style.display = 'none';
+    
+    document.body.appendChild(element);
+    element.click();
+    document.body.removeChild(element);
+}
+
+// Auto-focus on the textarea for easy copying
+document.addEventListener('DOMContentLoaded', function() {
+    document.getElementById('wordpressContent').focus();
+});
+</script>
+{% endblock %}

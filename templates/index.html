@@ -1,0 +1,184 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="hero-section">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-8 text-center">
+                <h1 class="display-4 fw-bold mb-4">
+                    <i class="bi bi-magic"></i> AI-Powered Case Study Generator
+                </h1>
+                <p class="lead mb-4">
+                    Create compelling, professional case studies in WordPress format with the power of AI. 
+                    Simply fill in the details below and let our AI generate a complete case study for you.
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container my-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="alert alert-{% if category == 'error' %}danger{% else %}{{ category }}{% endif %} alert-dismissible fade show" role="alert">
+                            <i class="bi bi-{% if category == 'error' %}exclamation-triangle{% else %}info-circle{% endif %}"></i>
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h3 class="card-title mb-0">
+                        <i class="bi bi-form"></i> Case Study Details
+                    </h3>
+                </div>
+                <div class="card-body">
+                    <form method="POST" id="caseStudyForm">
+                        {{ form.hidden_tag() }}
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.client_name.id }}" class="form-label">
+                                    <i class="bi bi-building"></i> {{ form.client_name.label.text }}
+                                </label>
+                                {{ form.client_name(class="form-control") }}
+                                {% if form.client_name.errors %}
+                                    <div class="text-danger small">
+                                        {% for error in form.client_name.errors %}{{ error }}{% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.industry.id }}" class="form-label">
+                                    <i class="bi bi-diagram-3"></i> {{ form.industry.label.text }}
+                                </label>
+                                {{ form.industry(class="form-control") }}
+                                {% if form.industry.errors %}
+                                    <div class="text-danger small">
+                                        {% for error in form.industry.errors %}{{ error }}{% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="{{ form.main_challenge.id }}" class="form-label">
+                                <i class="bi bi-exclamation-triangle"></i> {{ form.main_challenge.label.text }}
+                            </label>
+                            {{ form.main_challenge(class="form-control") }}
+                            {% if form.main_challenge.errors %}
+                                <div class="text-danger small">
+                                    {% for error in form.main_challenge.errors %}{{ error }}{% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="{{ form.solution_provided.id }}" class="form-label">
+                                <i class="bi bi-gear"></i> {{ form.solution_provided.label.text }}
+                            </label>
+                            {{ form.solution_provided(class="form-control") }}
+                            {% if form.solution_provided.errors %}
+                                <div class="text-danger small">
+                                    {% for error in form.solution_provided.errors %}{{ error }}{% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.location.id }}" class="form-label">
+                                    <i class="bi bi-geo-alt"></i> {{ form.location.label.text }}
+                                </label>
+                                {{ form.location(class="form-control") }}
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.project_scale.id }}" class="form-label">
+                                    <i class="bi bi-rulers"></i> {{ form.project_scale.label.text }}
+                                </label>
+                                {{ form.project_scale(class="form-control") }}
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="{{ form.technologies_used.id }}" class="form-label">
+                                <i class="bi bi-cpu"></i> {{ form.technologies_used.label.text }}
+                            </label>
+                            {{ form.technologies_used(class="form-control") }}
+                            <div class="form-text">Separate multiple technologies with commas</div>
+                        </div>
+
+                        <div class="mb-4">
+                            <label for="{{ form.additional_context.id }}" class="form-label">
+                                <i class="bi bi-chat-text"></i> {{ form.additional_context.label.text }}
+                            </label>
+                            {{ form.additional_context(class="form-control") }}
+                        </div>
+
+                        <div class="d-grid">
+                            {{ form.submit(class="btn btn-primary btn-lg") }}
+                        </div>
+                    </form>
+
+                    <div class="loading-spinner text-center mt-4" id="loadingSpinner">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Generating case study...</span>
+                        </div>
+                        <p class="mt-2">Generating your case study with AI... This may take 30-60 seconds.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="text-center mt-4">
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="card h-100">
+                            <div class="card-body text-center">
+                                <i class="bi bi-robot text-primary" style="font-size: 2rem;"></i>
+                                <h5 class="card-title mt-2">AI-Powered</h5>
+                                <p class="card-text">Uses advanced AI to generate compelling content</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card h-100">
+                            <div class="card-body text-center">
+                                <i class="bi bi-wordpress text-primary" style="font-size: 2rem;"></i>
+                                <h5 class="card-title mt-2">WordPress Ready</h5>
+                                <p class="card-text">Generates content in WordPress block format</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card h-100">
+                            <div class="card-body text-center">
+                                <i class="bi bi-lightning text-primary" style="font-size: 2rem;"></i>
+                                <h5 class="card-title mt-2">Fast & Easy</h5>
+                                <p class="card-text">Generate complete case studies in minutes</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.getElementById('caseStudyForm').addEventListener('submit', function() {
+    document.getElementById('loadingSpinner').style.display = 'block';
+    document.querySelector('button[type="submit"]').disabled = true;
+});
+</script>
+{% endblock %}
