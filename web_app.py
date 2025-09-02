@@ -13,11 +13,16 @@ from flask import Flask, render_template, request, flash, redirect, url_for, jso
 from flask_wtf import FlaskForm
 from wtforms import StringField, TextAreaField, SubmitField
 from wtforms.validators import DataRequired, Length
-from dotenv import load_dotenv
 from datetime import datetime
 
-# Load environment variables
-load_dotenv()
+# Load environment variables (only if dotenv is available and .env file exists)
+try:
+    from dotenv import load_dotenv
+    if os.path.exists('.env'):
+        load_dotenv()
+except ImportError:
+    # dotenv not available, which is fine for production
+    pass
 
 from models import CaseStudyInput, CaseStudy, CaseStudySection
 from ai import AIContentGenerator
