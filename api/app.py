@@ -1,27 +1,17 @@
-from flask import Flask, jsonify
-import os
+from flask import Flask
 
 app = Flask(__name__)
-app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'fallback-secret-key')
 
 @app.route('/')
 def hello():
-    return jsonify({
-        'status': 'success',
-        'message': 'Case Study Generator API is working!',
-        'environment': 'production' if os.environ.get('VERCEL') else 'development'
-    })
+    return "Hello from Vercel!"
 
 @app.route('/health')
 def health():
-    return jsonify({
-        'status': 'healthy',
-        'openai_key_exists': bool(os.environ.get('OPENAI_API_KEY')),
-        'secret_key_exists': bool(os.environ.get('SECRET_KEY'))
-    })
+    return "Healthy!"
 
-# For Vercel
-app_for_vercel = app
+# This is the WSGI callable that Vercel will use
+application = app
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run()
