@@ -49,5 +49,10 @@ temp_*
 demo_case_study.txt
 *.txt
 
-# Node modules (if any)
+# Node / Next.js
 node_modules/
+.next/
+out/
+
+# TypeScript build cache
+*.tsbuildinfo
