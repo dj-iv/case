@@ -1,0 +1,396 @@
+{% extends "base.html" %}
+
+{% block title %}Website Preview - {{ case_study.title }}{% endblock %}
+
+{% block content %}
+<style>
+    /* Website Preview Styles */
+    .website-preview {
+        background: white;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        margin: 20px 0;
+    }
+    
+    .preview-header {
+        background: #f8f9fa;
+        padding: 15px 20px;
+        border-bottom: 1px solid #ddd;
+        border-radius: 8px 8px 0 0;
+    }
+    
+    .preview-content {
+        padding: 40px;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+        line-height: 1.6;
+        color: #333;
+        max-width: 800px;
+        margin: 0 auto;
+    }
+    
+    .preview-content h1 {
+        color: #2c3e50;
+        font-size: 2.5rem;
+        font-weight: 700;
+        margin-bottom: 1.5rem;
+        border-bottom: 3px solid #3498db;
+        padding-bottom: 0.5rem;
+    }
+    
+    .preview-content h2 {
+        color: #34495e;
+        font-size: 1.8rem;
+        font-weight: 600;
+        margin-top: 2.5rem;
+        margin-bottom: 1rem;
+        border-left: 4px solid #3498db;
+        padding-left: 1rem;
+    }
+    
+    .preview-content p {
+        margin-bottom: 1.2rem;
+        font-size: 1.1rem;
+        text-align: justify;
+    }
+    
+    .preview-content ul {
+        margin: 1.5rem 0;
+        padding-left: 0;
+    }
+    
+    .preview-content li {
+        background: #f8f9fa;
+        margin-bottom: 0.8rem;
+        padding: 12px 16px;
+        border-left: 4px solid #e74c3c;
+        list-style: none;
+        border-radius: 4px;
+        font-size: 1.05rem;
+    }
+    
+    .preview-content li:before {
+        content: "▶";
+        color: #e74c3c;
+        font-weight: bold;
+        margin-right: 10px;
+    }
+    
+    /* Article meta info */
+    .article-meta {
+        color: #666;
+        font-size: 0.9rem;
+        margin-bottom: 2rem;
+        padding-bottom: 1rem;
+        border-bottom: 1px solid #eee;
+    }
+    
+    /* Call to action styling */
+    .cta-section {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 2rem;
+        border-radius: 8px;
+        margin: 2rem 0;
+        text-align: center;
+    }
+    
+    .cta-section h3 {
+        color: white !important;
+        margin-bottom: 1rem;
+    }
+    
+    .cta-button {
+        background: white;
+        color: #667eea;
+        padding: 12px 30px;
+        border: none;
+        border-radius: 25px;
+        font-weight: 600;
+        text-decoration: none;
+        display: inline-block;
+        margin-top: 1rem;
+        transition: transform 0.2s;
+    }
+    
+    .cta-button:hover {
+        transform: translateY(-2px);
+        color: #667eea;
+        text-decoration: none;
+    }
+    
+    /* Browser mockup */
+    .browser-mockup {
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        overflow: hidden;
+        background: white;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+    
+    .browser-bar {
+        background: #f1f1f1;
+        padding: 12px 16px;
+        border-bottom: 1px solid #ddd;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    
+    .browser-dots {
+        display: flex;
+        gap: 6px;
+    }
+    
+    .browser-dot {
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+    }
+    
+    .browser-dot.red { background: #ff5f56; }
+    .browser-dot.yellow { background: #ffbd2e; }
+    .browser-dot.green { background: #27ca3f; }
+    
+    .browser-url {
+        background: white;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        padding: 4px 12px;
+        margin-left: 12px;
+        flex: 1;
+        font-size: 0.9rem;
+        color: #666;
+    }
+</style>
+
+<div class="container my-4">
+    <!-- Navigation -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{{ url_for('index') }}">Generator</a></li>
+                    <li class="breadcrumb-item"><a href="javascript:history.back()">Results</a></li>
+                    <li class="breadcrumb-item active">Website Preview</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+
+    <!-- Preview Controls -->
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <h1 class="h3">
+                <i class="bi bi-display"></i> Website Preview
+            </h1>
+            <p class="text-muted">See how your case study will look when published on your website</p>
+        </div>
+        <div class="col-md-4 text-end">
+            <div class="btn-group" role="group">
+                <button type="button" class="btn btn-outline-primary btn-sm" onclick="toggleDeviceView('desktop')" id="desktopBtn">
+                    <i class="bi bi-laptop"></i> Desktop
+                </button>
+                <button type="button" class="btn btn-outline-primary btn-sm" onclick="toggleDeviceView('tablet')" id="tabletBtn">
+                    <i class="bi bi-tablet"></i> Tablet
+                </button>
+                <button type="button" class="btn btn-outline-primary btn-sm" onclick="toggleDeviceView('mobile')" id="mobileBtn">
+                    <i class="bi bi-phone"></i> Mobile
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Browser Mockup -->
+    <div class="browser-mockup" id="previewContainer">
+        <div class="browser-bar">
+            <div class="browser-dots">
+                <div class="browser-dot red"></div>
+                <div class="browser-dot yellow"></div>
+                <div class="browser-dot green"></div>
+            </div>
+            <div class="browser-url">
+                https://your-website.com/case-studies/{{ case_study.title.lower().replace(' ', '-').replace(':', '') }}
+            </div>
+        </div>
+        
+        <div class="website-preview">
+            <div class="preview-content">
+                <!-- Article Header -->
+                <h1>{{ case_study.title }}</h1>
+                
+                <div class="article-meta">
+                    <i class="bi bi-calendar3"></i> Published on {{ current_date }}
+                    <span class="mx-2">•</span>
+                    <i class="bi bi-clock"></i> 5 min read
+                    <span class="mx-2">•</span>
+                    <i class="bi bi-tag"></i> Case Study
+                </div>
+
+                <!-- Generated Content -->
+                {% for section in case_study.sections %}
+                    <h2>{{ section.title }}</h2>
+                    
+                    {% set paragraphs = section.content.split('\n\n') %}
+                    {% for paragraph in paragraphs %}
+                        {% if paragraph.strip() %}
+                            {% if paragraph.strip().startswith('•') or paragraph.strip().startswith('-') or paragraph.strip().startswith('*') %}
+                                <!-- Handle bullet points -->
+                                {% if not loop.first and not paragraphs[loop.index-2].strip().startswith(('•', '-', '*')) %}
+                                    <ul>
+                                {% endif %}
+                                <li>{{ paragraph.strip()[1:].strip() }}</li>
+                                {% if loop.last or not paragraphs[loop.index].strip().startswith(('•', '-', '*')) %}
+                                    </ul>
+                                {% endif %}
+                            {% else %}
+                                <p>{{ paragraph.strip() }}</p>
+                            {% endif %}
+                        {% endif %}
+                    {% endfor %}
+                {% endfor %}
+
+                <!-- Call to Action -->
+                <div class="cta-section">
+                    <h3><i class="bi bi-rocket"></i> Ready to Transform Your Business?</h3>
+                    <p>Get in touch with our team to discuss how we can help solve your challenges with innovative solutions.</p>
+                    <a href="#contact" class="cta-button">
+                        <i class="bi bi-envelope"></i> Get In Touch
+                    </a>
+                </div>
+
+                <!-- Social Sharing -->
+                <div class="text-center mt-4 pt-4 border-top">
+                    <h5 class="text-muted mb-3">Share this case study</h5>
+                    <div class="d-flex justify-content-center gap-3">
+                        <a href="#" class="btn btn-outline-primary btn-sm">
+                            <i class="bi bi-linkedin"></i> LinkedIn
+                        </a>
+                        <a href="#" class="btn btn-outline-info btn-sm">
+                            <i class="bi bi-twitter"></i> Twitter
+                        </a>
+                        <a href="#" class="btn btn-outline-success btn-sm">
+                            <i class="bi bi-whatsapp"></i> WhatsApp
+                        </a>
+                        <a href="#" class="btn btn-outline-secondary btn-sm">
+                            <i class="bi bi-envelope"></i> Email
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="row mt-4">
+        <div class="col-md-6">
+            <a href="javascript:history.back()" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left"></i> Back to Results
+            </a>
+        </div>
+        <div class="col-md-6 text-end">
+            <button class="btn btn-success" onclick="printPreview()">
+                <i class="bi bi-printer"></i> Print Preview
+            </button>
+            <button class="btn btn-primary" onclick="sharePreview()">
+                <i class="bi bi-share"></i> Share Preview
+            </button>
+        </div>
+    </div>
+
+    <!-- Preview Info -->
+    <div class="alert alert-info mt-4">
+        <i class="bi bi-info-circle"></i>
+        <strong>Preview Note:</strong> This shows how your case study will appear on a typical business website. 
+        The actual appearance may vary depending on your website's theme and styling.
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+let currentView = 'desktop';
+
+function toggleDeviceView(device) {
+    const container = document.getElementById('previewContainer');
+    const buttons = document.querySelectorAll('.btn-group .btn');
+    
+    // Reset all buttons
+    buttons.forEach(btn => {
+        btn.classList.remove('btn-primary');
+        btn.classList.add('btn-outline-primary');
+    });
+    
+    // Activate current button
+    document.getElementById(device + 'Btn').classList.remove('btn-outline-primary');
+    document.getElementById(device + 'Btn').classList.add('btn-primary');
+    
+    // Apply device-specific styles
+    container.style.transition = 'all 0.3s ease';
+    
+    switch(device) {
+        case 'desktop':
+            container.style.maxWidth = '100%';
+            container.style.margin = '0 auto';
+            break;
+        case 'tablet':
+            container.style.maxWidth = '768px';
+            container.style.margin = '0 auto';
+            break;
+        case 'mobile':
+            container.style.maxWidth = '375px';
+            container.style.margin = '0 auto';
+            break;
+    }
+    
+    currentView = device;
+}
+
+function printPreview() {
+    const printWindow = window.open('', '_blank');
+    const previewContent = document.querySelector('.preview-content').innerHTML;
+    
+    printWindow.document.write(`
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <title>{{ case_study.title }} - Case Study</title>
+            <style>
+                body { font-family: Arial, sans-serif; line-height: 1.6; margin: 40px; }
+                h1 { color: #2c3e50; border-bottom: 3px solid #3498db; padding-bottom: 10px; }
+                h2 { color: #34495e; border-left: 4px solid #3498db; padding-left: 15px; }
+                li { margin-bottom: 8px; }
+                .cta-section { background: #f8f9fa; padding: 20px; border-radius: 8px; text-align: center; }
+            </style>
+        </head>
+        <body>
+            ${previewContent}
+        </body>
+        </html>
+    `);
+    
+    printWindow.document.close();
+    printWindow.print();
+}
+
+function sharePreview() {
+    if (navigator.share) {
+        navigator.share({
+            title: '{{ case_study.title }}',
+            text: 'Check out this case study preview',
+            url: window.location.href
+        });
+    } else {
+        // Fallback: copy URL to clipboard
+        navigator.clipboard.writeText(window.location.href).then(() => {
+            alert('Preview URL copied to clipboard!');
+        });
+    }
+}
+
+// Initialize with desktop view
+document.addEventListener('DOMContentLoaded', function() {
+    toggleDeviceView('desktop');
+});
+</script>
+{% endblock %}
