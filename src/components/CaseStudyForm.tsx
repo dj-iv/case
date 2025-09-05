@@ -160,15 +160,11 @@ export function CaseStudyForm() {
     setPublishError('')
     
     try {
-      // Use edited content if available, otherwise use original generated content
-      const contentToPublish = editedContent || generatedContent
-      
-      // Get the current image URL based on the selected option
       const currentImageUrl = getCurrentImageUrl()
       
-      // Include the image URL if available
+      // Include the current image URL if available
       const publishData = {
-        ...contentToPublish,
+        ...generatedContent,
         ...(currentImageUrl && { imageUrl: currentImageUrl })
       }
 
