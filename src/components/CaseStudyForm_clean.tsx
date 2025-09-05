@@ -2,8 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useForm } from 'react-hook-form'
-import { Loader2, Send, Eye, CheckCircle, X, Monitor, Tablet, Smartphone, Edit3, RefreshCw, Edit, Upload, Image as ImageIcon, Sparkles } from 'lucide-react'
-import UCtelLogo from './UCtelLogo'
+import { Loader2, Send, Eye, CheckCircle, X, Monitor, Tablet, Smartphone, Edit3, RefreshCw } from 'lucide-react'
 
 interface CaseStudyFormData {
   clientName: string
@@ -49,12 +48,6 @@ export function CaseStudyForm() {
   const [autoGenerateImage, setAutoGenerateImage] = useState(true)
   const [showImagePromptEditor, setShowImagePromptEditor] = useState(false)
   const [customImagePrompt, setCustomImagePrompt] = useState('')
-  const [imageOption, setImageOption] = useState<'ai' | 'upload' | 'none'>('ai')
-  const [uploadedImageFile, setUploadedImageFile] = useState<File | null>(null)
-  const [uploadedImageUrl, setUploadedImageUrl] = useState<string | null>(null)
-  const [isUploadingImage, setIsUploadingImage] = useState(false)
-  const [isEditing, setIsEditing] = useState(false)
-  const [editedContent, setEditedContent] = useState<GeneratedCaseStudy | null>(null)
   
   const { register, handleSubmit, formState: { errors }, watch } = useForm<CaseStudyFormData>()
   
@@ -99,38 +92,14 @@ export function CaseStudyForm() {
   const onSubmit = async (data: CaseStudyFormData) => {
     setIsGenerating(true)
     try {
-      // Determine image generation settings based on user selection
-      let imageSettings = {}
-      
-      if (imageOption === 'ai') {
-        imageSettings = {
-          generateImage: autoGenerateImage,
-          customImagePrompt: customImagePrompt || undefined
-        }
-      } else if (imageOption === 'upload' && uploadedImageUrl) {
-        imageSettings = {
-          generateImage: false,
-          providedImageUrl: uploadedImageUrl
-        }
-      } else {
-        // No image
-        imageSettings = {
-          generateImage: false
-        }
-      }
-
       const response = await fetch('/api/generate-case-study', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           ...data,
           customPrompt: customPrompt || undefined,
-<<<<<<< HEAD
-          generateImage: imageOption === 'ai',
+          generateImage: autoGenerateImage,
           customImagePrompt: customImagePrompt || undefined
-=======
-          ...imageSettings
->>>>>>> d13686da2ba90368ed3fd9c84c17f3c9a68ed270
         }),
       })
       
@@ -138,25 +107,11 @@ export function CaseStudyForm() {
       
       const result = await response.json()
       setGeneratedContent(result)
-      
-<<<<<<< HEAD
-      // Handle image based on option
-      if (imageOption === 'ai' && result.imageUrl) {
+      if (result.imageUrl) {
         setGeneratedImage(result.imageUrl)
-      } else if (imageOption === 'upload' && uploadedImageUrl) {
-        // Keep the uploaded image
-=======
-      // Set the appropriate image based on the option
-      if (imageOption === 'ai' && result.imageUrl) {
-        setGeneratedImage(result.imageUrl)
-      } else if (imageOption === 'upload' && uploadedImageUrl) {
->>>>>>> d13686da2ba90368ed3fd9c84c17f3c9a68ed270
-        setGeneratedImage(uploadedImageUrl)
-      } else {
+      } else if (!autoGenerateImage) {
         setGeneratedImage(null)
       }
-      
-      setShowPreview(true)
     } catch (error) {
       console.error('Error generating case study:', error)
       alert('Error generating case study. Please try again.')
@@ -173,24 +128,10 @@ export function CaseStudyForm() {
     setPublishError('')
     
     try {
-<<<<<<< HEAD
-      const currentImageUrl = getCurrentImageUrl()
-      
-      // Include the current image URL if available
+      // Include the generated image URL if available
       const publishData = {
         ...generatedContent,
-=======
-      // Use edited content if available, otherwise use original generated content
-      const contentToPublish = editedContent || generatedContent
-      
-      // Get the current image URL based on the selected option
-      const currentImageUrl = getCurrentImageUrl()
-      
-      // Include the image URL if available
-      const publishData = {
-        ...contentToPublish,
->>>>>>> d13686da2ba90368ed3fd9c84c17f3c9a68ed270
-        ...(currentImageUrl && { imageUrl: currentImageUrl })
+        ...(generatedImage && { imageUrl: generatedImage })
       }
 
       const response = await fetch('/api/publish-to-wordpress', {
@@ -216,176 +157,17 @@ export function CaseStudyForm() {
     }
   }
 
-<<<<<<< HEAD
-  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-=======
-  const handleEditContent = () => {
-    if (generatedContent) {
-      setEditedContent({ ...generatedContent })
-      setIsEditing(true)
-    }
-  }
-
-  const handleSaveEdits = () => {
-    if (editedContent) {
-      setGeneratedContent(editedContent)
-      setIsEditing(false)
-    }
-  }
-
-  const handleCancelEdits = () => {
-    setEditedContent(null)
-    setIsEditing(false)
-  }
-
-  const updateEditedContent = (field: string, value: string, subField?: string) => {
-    if (!editedContent) return
-    
-    setEditedContent(prev => {
-      if (!prev) return null
-      
-      if (subField) {
-        const fieldValue = prev[field as keyof typeof prev] as any
-        return {
-          ...prev,
-          [field]: {
-            ...fieldValue,
-            [subField]: value
-          }
-        }
-      } else {
-        return {
-          ...prev,
-          [field]: value
-        }
-      }
-    })
-  }
-
-  const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0]
->>>>>>> d13686da2ba90368ed3fd9c84c17f3c9a68ed270
-    if (!file) return
-
-    // Validate file type
-    if (!file.type.startsWith('image/')) {
-<<<<<<< HEAD
-      alert('Please select an image file.')
-      return
-    }
-
-    // Validate file size (5MB limit)
-    if (file.size > 5 * 1024 * 1024) {
-      alert('Image size must be less than 5MB.')
-      return
-    }
-
-=======
-      alert('Please select an image file (PNG, JPG, etc.)')
-      return
-    }
-
-    // Validate file size (5MB max)
-    if (file.size > 5 * 1024 * 1024) {
-      alert('Image size must be less than 5MB')
-      return
-    }
-
-    setUploadedImage(file)
-    
-    // Create preview URL
-    const previewUrl = URL.createObjectURL(file)
-    setUploadedImageUrl(previewUrl)
-
-    // Upload to WordPress if we want to store it there
->>>>>>> d13686da2ba90368ed3fd9c84c17f3c9a68ed270
-    setIsUploadingImage(true)
-    try {
-      const formData = new FormData()
-      formData.append('image', file)
-<<<<<<< HEAD
-      formData.append('altText', `${generatedContent?.title || 'Case Study'} image`)
-      formData.append('title', generatedContent?.title || 'Case Study Image')
-
-      const response = await fetch('/api/upload-image-to-wordpress', {
-        method: 'POST',
-        body: formData
-      })
-
-      if (!response.ok) {
-        throw new Error('Failed to upload image')
-      }
-
-      const result = await response.json()
-      setUploadedImageFile(file)
-      setUploadedImageUrl(result.url || result.imageUrl)
-      console.log('Image uploaded successfully:', result)
-    } catch (error) {
-      console.error('Error uploading image:', error)
-      alert('Failed to upload image. Please try again.')
-=======
-
-      const response = await fetch('/api/upload-image-to-wordpress', {
-        method: 'POST',
-        body: formData,
-      })
-
-      if (response.ok) {
-        const result = await response.json()
-        setUploadedImageUrl(result.url) // Use WordPress URL instead of local preview
-      } else {
-        console.warn('Failed to upload to WordPress, using local preview')
-      }
-    } catch (error) {
-      console.warn('Failed to upload to WordPress, using local preview:', error)
->>>>>>> d13686da2ba90368ed3fd9c84c17f3c9a68ed270
-    } finally {
-      setIsUploadingImage(false)
-    }
-  }
-
-<<<<<<< HEAD
-  const getCurrentImageUrl = () => {
-    if (imageOption === 'upload' && uploadedImageUrl) {
-      return uploadedImageUrl
-    }
-    if (imageOption === 'ai' && generatedImage) {
-      return generatedImage
-    }
-    return null
-=======
-  const removeUploadedImage = () => {
-    setUploadedImage(null)
-    if (uploadedImageUrl) {
-      URL.revokeObjectURL(uploadedImageUrl)
-      setUploadedImageUrl(null)
-    }
-  }
-
-  // Get the current image URL based on selected option
-  const getCurrentImageUrl = () => {
-    switch (imageOption) {
-      case 'ai':
-        return generatedImage
-      case 'upload':
-        return uploadedImageUrl
-      case 'none':
-      default:
-        return null
-    }
->>>>>>> d13686da2ba90368ed3fd9c84c17f3c9a68ed270
-  }
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
       {/* Header */}
       <div className="bg-white shadow-sm border-b border-gray-200">
         <div className="max-w-4xl mx-auto px-6 py-4">
           <div className="flex items-center space-x-4">
-            <UCtelLogo width={120} height={32} />
+            <div className="w-12 h-12 bg-gradient-to-br from-uctel-primary to-uctel-secondary rounded-lg flex items-center justify-center">
+              <span className="text-white font-bold text-lg">UC</span>
+            </div>
             <div>
-              <h1 className="text-2xl font-bold text-gray-900">Case Study Generator</h1>
+              <h1 className="text-2xl font-bold text-gray-900">UCtel Case Study Generator</h1>
               <p className="text-gray-600">Professional case studies for mobile signal boosting solutions</p>
             </div>
           </div>
@@ -527,58 +309,23 @@ export function CaseStudyForm() {
               Advanced Options
             </summary>
             <div className="p-6 space-y-4">
-              {/* Image Options */}
+              {/* Image Generation Options */}
               <div className="border-b border-gray-200 pb-4">
-                <h3 className="text-sm font-medium text-gray-700 mb-4">Image Options</h3>
-                <div className="space-y-3">
-                  <div className="flex items-center space-x-3">
-                    <input
-                      type="radio"
-                      id="imageAI"
-                      name="imageOption"
-                      value="ai"
-                      checked={imageOption === 'ai'}
-                      onChange={(e) => setImageOption('ai')}
-                      className="h-4 w-4 text-uctel-primary border-gray-300 focus:ring-uctel-primary"
-                    />
-                    <label htmlFor="imageAI" className="text-sm font-medium text-gray-700">
-                      Generate image with AI
-                    </label>
-                  </div>
-                  
-                  <div className="flex items-center space-x-3">
-                    <input
-                      type="radio"
-                      id="imageUpload"
-                      name="imageOption"
-                      value="upload"
-                      checked={imageOption === 'upload'}
-                      onChange={(e) => setImageOption('upload')}
-                      className="h-4 w-4 text-uctel-primary border-gray-300 focus:ring-uctel-primary"
-                    />
-                    <label htmlFor="imageUpload" className="text-sm font-medium text-gray-700">
-                      Upload my own image
-                    </label>
-                  </div>
-                  
-                  <div className="flex items-center space-x-3">
-                    <input
-                      type="radio"
-                      id="imageNone"
-                      name="imageOption"
-                      value="none"
-                      checked={imageOption === 'none'}
-                      onChange={(e) => setImageOption('none')}
-                      className="h-4 w-4 text-uctel-primary border-gray-300 focus:ring-uctel-primary"
-                    />
-                    <label htmlFor="imageNone" className="text-sm font-medium text-gray-700">
-                      No image
-                    </label>
-                  </div>
+                <div className="flex items-center space-x-3 mb-4">
+                  <input
+                    type="checkbox"
+                    id="autoGenerateImage"
+                    checked={autoGenerateImage}
+                    onChange={(e) => setAutoGenerateImage(e.target.checked)}
+                    className="h-4 w-4 text-uctel-primary border-gray-300 rounded focus:ring-uctel-primary"
+                  />
+                  <label htmlFor="autoGenerateImage" className="text-sm font-medium text-gray-700">
+                    Generate hero image automatically
+                  </label>
                 </div>
                 
-                {imageOption === 'ai' && (
-                  <div className="mt-4">
+                {autoGenerateImage && (
+                  <div>
                     <div className="flex items-center justify-between mb-2">
                       <label className="block text-sm font-medium text-gray-700">
                         Image Generation Prompt
@@ -611,36 +358,6 @@ export function CaseStudyForm() {
                         className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-uctel-primary focus:border-transparent text-sm"
                         placeholder="Describe the type of image you want generated..."
                       />
-                    )}
-                  </div>
-                )}
-                
-                {imageOption === 'upload' && (
-                  <div className="mt-4">
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Choose Image File
-                    </label>
-                    <input
-                      type="file"
-                      accept="image/*"
-                      onChange={handleImageUpload}
-                      className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-uctel-primary focus:border-transparent text-sm"
-                    />
-                    {uploadedImageFile && (
-                      <div className="mt-2 flex items-center space-x-2">
-                        <CheckCircle size={16} className="text-green-500" />
-                        <span className="text-sm text-gray-600">{uploadedImageFile.name}</span>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setUploadedImageFile(null)
-                            setUploadedImageUrl(null)
-                          }}
-                          className="text-red-500 hover:text-red-700"
-                        >
-                          <X size={14} />
-                        </button>
-                      </div>
                     )}
                   </div>
                 )}
@@ -683,143 +400,12 @@ export function CaseStudyForm() {
                 )}
               </div>
             </div>
-
-            {/* Image Options Section */}
-            <div className="space-y-4">
-              <label className="block text-sm font-medium text-gray-700">
-                Image Generation
-              </label>
-              
-              <div className="space-y-3">
-                <div className="flex items-center">
-                  <input
-                    type="radio"
-                    id="image-ai"
-                    name="imageOption"
-                    value="ai"
-                    checked={imageOption === 'ai'}
-                    onChange={(e) => setImageOption(e.target.value as 'ai' | 'upload' | 'none')}
-                    className="h-4 w-4 text-uctel-primary focus:ring-uctel-primary border-gray-300"
-                  />
-                  <label htmlFor="image-ai" className="ml-3 block text-sm text-gray-700">
-                    <div className="flex items-center">
-                      <Sparkles className="h-4 w-4 text-uctel-primary mr-2" />
-                      Generate with AI
-                    </div>
-                  </label>
-                </div>
-
-                <div className="flex items-center">
-                  <input
-                    type="radio"
-                    id="image-upload"
-                    name="imageOption"
-                    value="upload"
-                    checked={imageOption === 'upload'}
-                    onChange={(e) => setImageOption(e.target.value as 'ai' | 'upload' | 'none')}
-                    className="h-4 w-4 text-uctel-primary focus:ring-uctel-primary border-gray-300"
-                  />
-                  <label htmlFor="image-upload" className="ml-3 block text-sm text-gray-700">
-                    <div className="flex items-center">
-                      <Upload className="h-4 w-4 text-uctel-secondary mr-2" />
-                      Upload custom image
-                    </div>
-                  </label>
-                </div>
-
-                <div className="flex items-center">
-                  <input
-                    type="radio"
-                    id="image-none"
-                    name="imageOption"
-                    value="none"
-                    checked={imageOption === 'none'}
-                    onChange={(e) => setImageOption(e.target.value as 'ai' | 'upload' | 'none')}
-                    className="h-4 w-4 text-uctel-primary focus:ring-uctel-primary border-gray-300"
-                  />
-                  <label htmlFor="image-none" className="ml-3 block text-sm text-gray-700">
-                    <div className="flex items-center">
-                      <ImageIcon className="h-4 w-4 text-gray-500 mr-2" />
-                      No image
-                    </div>
-                  </label>
-                </div>
-              </div>
-
-              {/* File Upload Section */}
-              {imageOption === 'upload' && (
-                <div className="mt-4">
-                  {!uploadedImage ? (
-                    <div className="flex items-center justify-center w-full">
-                      <label
-                        htmlFor="image-upload-input"
-                        className="flex flex-col items-center justify-center w-full h-32 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100"
-                      >
-                        <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                          <Upload className="w-8 h-8 mb-3 text-gray-400" />
-                          <p className="mb-2 text-sm text-gray-500">
-                            <span className="font-semibold">Click to upload</span> or drag and drop
-                          </p>
-                          <p className="text-xs text-gray-500">PNG, JPG, GIF up to 5MB</p>
-                        </div>
-                        <input
-                          id="image-upload-input"
-                          type="file"
-                          accept="image/*"
-                          onChange={handleImageUpload}
-                          className="hidden"
-                          disabled={isUploadingImage}
-                        />
-                      </label>
-                    </div>
-                  ) : (
-                    <div className="space-y-3">
-                      <div className="relative inline-block">
-                        <img
-                          src={uploadedImageUrl || ''}
-                          alt="Uploaded preview"
-                          className="h-32 w-auto rounded-lg border shadow-sm"
-                        />
-                        {isUploadingImage && (
-                          <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 rounded-lg">
-                            <div className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                          </div>
-                        )}
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <button
-                          type="button"
-                          onClick={removeUploadedImage}
-                          className="text-sm text-red-600 hover:text-red-700"
-                        >
-                          Remove image
-                        </button>
-                        <label
-                          htmlFor="image-replace-input"
-                          className="text-sm text-uctel-primary hover:text-uctel-secondary cursor-pointer"
-                        >
-                          Replace image
-                        </label>
-                        <input
-                          id="image-replace-input"
-                          type="file"
-                          accept="image/*"
-                          onChange={handleImageUpload}
-                          className="hidden"
-                          disabled={isUploadingImage}
-                        />
-                      </div>
-                    </div>
-                  )}
-                </div>
-              )}
-            </div>
           </details>
 
           {/* Generate Button */}
           <button
             type="submit"
-            disabled={isGenerating || isUploadingImage}
+            disabled={isGenerating}
             className="w-full bg-gradient-to-r from-uctel-primary to-uctel-secondary text-white py-4 px-6 rounded-xl font-semibold text-lg hover:shadow-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2"
           >
             {isGenerating ? (
@@ -847,25 +433,17 @@ export function CaseStudyForm() {
             </div>
             <div className="p-6">
               <div className="mb-6">
-                <h3 className="text-lg font-semibold text-gray-900 mb-2">{(editedContent || generatedContent).title}</h3>
-                <p className="text-gray-600 italic">&quot;{(editedContent || generatedContent).previewQuote}&quot;</p>
+                <h3 className="text-lg font-semibold text-gray-900 mb-2">{generatedContent.title}</h3>
+                <p className="text-gray-600 italic">&quot;{generatedContent.previewQuote}&quot;</p>
               </div>
               
-              <div className="flex flex-col sm:flex-row gap-3">
+              <div className="flex flex-col sm:flex-row gap-4">
                 <button
                   onClick={() => setShowPreview(true)}
                   className="flex-1 bg-uctel-primary text-white py-3 px-6 rounded-lg font-medium hover:bg-uctel-secondary transition-colors flex items-center justify-center space-x-2"
                 >
                   <Eye size={18} />
-                  <span>Preview</span>
-                </button>
-                
-                <button
-                  onClick={handleEditContent}
-                  className="flex-1 bg-gray-600 text-white py-3 px-6 rounded-lg font-medium hover:bg-gray-700 transition-colors flex items-center justify-center space-x-2"
-                >
-                  <Edit size={18} />
-                  <span>Edit Content</span>
+                  <span>Preview Case Study</span>
                 </button>
                 
                 <button
@@ -912,17 +490,10 @@ export function CaseStudyForm() {
         {/* Preview Modal */}
         {showPreview && generatedContent && (
           <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-            {(() => {
-              // Use edited content if available, otherwise use original generated content
-              const contentToPreview = editedContent || generatedContent
-              return (
             <div className="bg-white rounded-xl shadow-2xl max-w-7xl w-full max-h-[90vh] flex flex-col">
               {/* Modal Header */}
               <div className="bg-gradient-to-r from-uctel-primary to-uctel-secondary px-6 py-4 flex items-center justify-between">
-                <div className="flex items-center space-x-3">
-                  <UCtelLogo width={80} height={24} />
-                  <h2 className="text-xl font-semibold text-white">Case Study Preview</h2>
-                </div>
+                <h2 className="text-xl font-semibold text-white">Case Study Preview</h2>
                 <div className="flex items-center space-x-4">
                   {/* Device Toggle */}
                   <div className="flex bg-white bg-opacity-20 rounded-lg p-1">
@@ -964,37 +535,35 @@ export function CaseStudyForm() {
                   <div className="bg-white shadow-lg">
                     {/* Hero Section */}
                     <div className="relative bg-gradient-to-r from-uctel-primary to-uctel-secondary text-white p-8">
-                      <h1 className="text-3xl md:text-4xl font-bold max-w-3xl leading-tight">{contentToPreview.title.replace('Case Study: ', '')}</h1>
+                      <h1 className="text-3xl md:text-4xl font-bold max-w-3xl leading-tight">{generatedContent.title.replace('Case Study: ', '')}</h1>
                       {generatedImage && (
                         <div className="mt-6 rounded-lg overflow-hidden shadow-lg">
-                                                  {getCurrentImageUrl() && (
-                          <img src={getCurrentImageUrl()!} alt={contentToPreview.title} className="w-full h-64 object-cover" />
-                        )}
+                          <img src={generatedImage} alt={generatedContent.title} className="w-full h-64 object-cover" />
                         </div>
                       )}
                     </div>
 
                     {/* Breadcrumb */}
-                    <div className="bg-white border-b px-8 py-3 text-xs md:text-sm text-gray-600">Home / Case Studies / {contentToPreview.title.replace('Case Study: ', '')}</div>
+                    <div className="bg-white border-b px-8 py-3 text-xs md:text-sm text-gray-600">Home / Case Studies / {generatedContent.title.replace('Case Study: ', '')}</div>
 
                     {/* Content */}
                     <div className="flex flex-col lg:flex-row">
                       {/* Sidebar */}
                       <div className="lg:w-1/3 bg-gray-50 p-6 border-r">
                         <div className="space-y-6">
-                          {contentToPreview.sidebarContent.challenge && (
+                          {generatedContent.sidebarContent.challenge && (
                             <div>
                               <h3 className="font-semibold text-gray-900 mb-2">The Challenge</h3>
                               <div className="text-sm text-gray-700 leading-relaxed">
-                                {contentToPreview.sidebarContent.challenge}
+                                {generatedContent.sidebarContent.challenge}
                               </div>
                             </div>
                           )}
-                          {contentToPreview.sidebarContent.results && (
+                          {generatedContent.sidebarContent.results && (
                             <div>
                               <h3 className="font-semibold text-gray-900 mb-2">The Results</h3>
                               <div className="text-sm text-gray-700 leading-relaxed">
-                                {contentToPreview.sidebarContent.results}
+                                {generatedContent.sidebarContent.results}
                               </div>
                             </div>
                           )}
@@ -1005,168 +574,38 @@ export function CaseStudyForm() {
                       <div className="lg:w-2/3 p-8 space-y-8">
                         <div>
                           <h2 className="text-2xl font-bold text-gray-900 mb-4">Summary</h2>
-                          <p className="text-gray-700 leading-relaxed whitespace-pre-line">{contentToPreview.sections.summary}</p>
+                          <p className="text-gray-700 leading-relaxed whitespace-pre-line">{generatedContent.sections.summary}</p>
                         </div>
                         <div>
                           <h2 className="text-2xl font-bold text-gray-900 mb-4">The Client</h2>
-                          <p className="text-gray-700 leading-relaxed whitespace-pre-line">{contentToPreview.sections.client}</p>
+                          <p className="text-gray-700 leading-relaxed whitespace-pre-line">{generatedContent.sections.client}</p>
                           {generatedImage && (
                             <div className="mt-4">
-                                                          {getCurrentImageUrl() && (
-                              <img src={getCurrentImageUrl()!} alt={contentToPreview.title} className="w-full rounded shadow" />
-                            )}
+                              <img src={generatedImage} alt={generatedContent.title} className="w-full rounded shadow" />
                             </div>
                           )}
                         </div>
                         <div>
                           <h2 className="text-2xl font-bold text-gray-900 mb-4">The Challenges</h2>
-                          <p className="text-gray-700 leading-relaxed whitespace-pre-line">{contentToPreview.sections.challenges}</p>
+                          <p className="text-gray-700 leading-relaxed whitespace-pre-line">{generatedContent.sections.challenges}</p>
                         </div>
                         <div>
                           <h2 className="text-2xl font-bold text-gray-900 mb-4">The Solution</h2>
-                          <p className="text-gray-700 leading-relaxed whitespace-pre-line">{contentToPreview.sections.solution}</p>
+                          <p className="text-gray-700 leading-relaxed whitespace-pre-line">{generatedContent.sections.solution}</p>
                         </div>
                         <div>
                           <h2 className="text-2xl font-bold text-gray-900 mb-4">The Results</h2>
-                          <p className="text-gray-700 leading-relaxed whitespace-pre-line">{contentToPreview.sections.results}</p>
+                          <p className="text-gray-700 leading-relaxed whitespace-pre-line">{generatedContent.sections.results}</p>
                         </div>
 
                         {/* Quote */}
                         <div className="bg-gradient-to-r from-uctel-primary to-uctel-secondary p-6 rounded-lg">
                           <blockquote className="text-white text-lg italic font-medium">
-                            &quot;{contentToPreview.previewQuote}&quot;
+                            &quot;{generatedContent.previewQuote}&quot;
                           </blockquote>
                         </div>
                       </div>
                     </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-              )
-            })()}
-          </div>
-        )}
-
-        {/* Edit Modal */}
-        {isEditing && editedContent && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-            <div className="bg-white rounded-xl shadow-2xl max-w-4xl w-full max-h-[90vh] flex flex-col">
-              {/* Modal Header */}
-              <div className="bg-gradient-to-r from-gray-600 to-gray-700 px-6 py-4 flex items-center justify-between">
-                <div className="flex items-center space-x-3">
-                  <Edit size={24} className="text-white" />
-                  <h2 className="text-xl font-semibold text-white">Edit Case Study Content</h2>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <button
-                    onClick={handleSaveEdits}
-                    className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors flex items-center space-x-2"
-                  >
-                    <CheckCircle size={16} />
-                    <span>Save Changes</span>
-                  </button>
-                  <button
-                    onClick={handleCancelEdits}
-                    className="text-white hover:text-gray-200 p-2"
-                  >
-                    <X size={24} />
-                  </button>
-                </div>
-              </div>
-
-              {/* Modal Content */}
-              <div className="flex-1 overflow-auto p-6 space-y-6">
-                {/* Title */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Title</label>
-                  <input
-                    type="text"
-                    value={editedContent.title}
-                    onChange={(e) => updateEditedContent('title', e.target.value)}
-                    className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-uctel-primary focus:border-transparent"
-                  />
-                </div>
-
-                {/* Client Quote */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Client Quote</label>
-                  <textarea
-                    value={editedContent.previewQuote}
-                    onChange={(e) => updateEditedContent('previewQuote', e.target.value)}
-                    rows={2}
-                    className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-uctel-primary focus:border-transparent"
-                  />
-                </div>
-
-                {/* Sidebar Content */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Sidebar - Challenge</label>
-                    <textarea
-                      value={editedContent.sidebarContent.challenge}
-                      onChange={(e) => updateEditedContent('sidebarContent', e.target.value, 'challenge')}
-                      rows={3}
-                      className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-uctel-primary focus:border-transparent"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Sidebar - Results</label>
-                    <textarea
-                      value={editedContent.sidebarContent.results}
-                      onChange={(e) => updateEditedContent('sidebarContent', e.target.value, 'results')}
-                      rows={3}
-                      className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-uctel-primary focus:border-transparent"
-                    />
-                  </div>
-                </div>
-
-                {/* Main Sections */}
-                <div className="space-y-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Summary</label>
-                    <textarea
-                      value={editedContent.sections.summary}
-                      onChange={(e) => updateEditedContent('sections', e.target.value, 'summary')}
-                      rows={4}
-                      className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-uctel-primary focus:border-transparent"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">The Client</label>
-                    <textarea
-                      value={editedContent.sections.client}
-                      onChange={(e) => updateEditedContent('sections', e.target.value, 'client')}
-                      rows={4}
-                      className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-uctel-primary focus:border-transparent"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">The Challenges</label>
-                    <textarea
-                      value={editedContent.sections.challenges}
-                      onChange={(e) => updateEditedContent('sections', e.target.value, 'challenges')}
-                      rows={5}
-                      className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-uctel-primary focus:border-transparent"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">The Solution</label>
-                    <textarea
-                      value={editedContent.sections.solution}
-                      onChange={(e) => updateEditedContent('sections', e.target.value, 'solution')}
-                      rows={5}
-                      className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-uctel-primary focus:border-transparent"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">The Results</label>
-                    <textarea
-                      value={editedContent.sections.results}
-                      onChange={(e) => updateEditedContent('sections', e.target.value, 'results')}
-                      rows={4}
-                      className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-uctel-primary focus:border-transparent"
-                    />
                   </div>
                 </div>
               </div>

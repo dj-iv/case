@@ -106,12 +106,11 @@ export async function POST(request: NextRequest) {
 
     const uploadedImage = await uploadResponse.json()
 
-    console.log('Image uploaded successfully:', uploadedImage.id)
-
     return NextResponse.json({
       success: true,
       imageId: uploadedImage.id,
       imageUrl: uploadedImage.source_url,
+      url: uploadedImage.source_url, // For compatibility with frontend
       imageData: {
         ID: uploadedImage.id,
         id: uploadedImage.id,

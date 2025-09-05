@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ case_study.title }} - UCtel Case Study</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #f8f9fa;
+            margin: 0;
+            padding: 0;
+        }
+        
+        .browser-mockup {
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            margin: 20px auto;
+            max-width: 1200px;
+            overflow: hidden;
+        }
+        
+        .browser-header {
+            background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+            padding: 12px 20px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .browser-dots {
+            display: flex;
+            gap: 6px;
+        }
+        
+        .dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.3);
+        }
+        
+        .address-bar {
+            background: rgba(255,255,255,0.2);
+            border-radius: 20px;
+            padding: 6px 15px;
+            margin-left: 15px;
+            flex: 1;
+            color: white;
+            font-size: 14px;
+        }
+        
+        .website-content {
+            padding: 40px;
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+        }
+        
+        h1 {
+            color: #212529;
+            font-size: 2.5em;
+            margin-bottom: 40px;
+            font-weight: 700;
+            line-height: 1.2;
+            text-align: left;
+        }
+        
+        h2 {
+            color: #007bff;
+            font-size: 1.8em;
+            margin-top: 50px;
+            margin-bottom: 25px;
+            font-weight: 600;
+            border-bottom: none;
+            padding-bottom: 0;
+        }
+        
+        h3 {
+            color: #212529;
+            font-size: 1.4em;
+            margin-top: 30px;
+            margin-bottom: 20px;
+            font-weight: 600;
+        }
+        
+        p {
+            margin-bottom: 20px;
+            font-size: 16px;
+            line-height: 1.8;
+            color: #495057;
+        }
+        
+        ul {
+            margin-bottom: 25px;
+            padding-left: 0;
+            list-style: none;
+        }
+        
+        li {
+            margin-bottom: 12px;
+            font-size: 16px;
+            line-height: 1.7;
+            color: #495057;
+            padding-left: 20px;
+            position: relative;
+        }
+        
+        li:before {
+            content: "•";
+            color: #007bff;
+            font-weight: bold;
+            position: absolute;
+            left: 0;
+            font-size: 18px;
+        }
+        
+        .uctel-cta {
+            background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+            color: white;
+            padding: 40px;
+            margin-top: 50px;
+            border-radius: 8px;
+            text-align: center;
+            box-shadow: 0 4px 15px rgba(0,123,255,0.2);
+        }
+        
+        .uctel-cta h3 {
+            color: white;
+            margin-top: 0;
+            margin-bottom: 20px;
+            font-size: 1.5em;
+        }
+        
+        .uctel-cta p {
+            color: rgba(255,255,255,0.9);
+            margin-bottom: 25px;
+            font-size: 17px;
+        }
+        
+        .btn-uctel {
+            background: white;
+            color: #007bff;
+            padding: 15px 35px;
+            border: none;
+            border-radius: 5px;
+            font-weight: 600;
+            text-decoration: none;
+            display: inline-block;
+            margin: 0 10px;
+            transition: all 0.3s ease;
+            font-size: 16px;
+        }
+        
+        .btn-uctel:hover {
+            background: #f8f9fa;
+            color: #0056b3;
+            text-decoration: none;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+        
+        .section-intro {
+            background: #f8f9fa;
+            padding: 30px;
+            margin: 40px 0;
+            border-left: 4px solid #007bff;
+            border-radius: 0 8px 8px 0;
+        }
+        
+        .device-toggle {
+            background: #007bff;
+            padding: 15px;
+            text-align: center;
+        }
+        
+        .device-btn {
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: none;
+            padding: 8px 20px;
+            margin: 0 5px;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .device-btn.active,
+        .device-btn:hover {
+            background: white;
+            color: #007bff;
+        }
+        
+        .device-desktop {
+            max-width: 1200px;
+        }
+        
+        .device-tablet {
+            max-width: 768px;
+        }
+        
+        .device-mobile {
+            max-width: 375px;
+        }
+        
+        .uctel-header {
+            background: #fff;
+            border-bottom: 1px solid #dee2e6;
+            padding: 15px 0;
+            margin-bottom: 30px;
+        }
+        
+        .uctel-logo {
+            color: #007bff;
+            font-size: 24px;
+            font-weight: bold;
+            text-decoration: none;
+        }
+        
+        .breadcrumb {
+            color: #6c757d;
+            font-size: 14px;
+            margin-bottom: 20px;
+        }
+        
+        .breadcrumb a {
+            color: #007bff;
+            text-decoration: none;
+        }
+        
+        .breadcrumb a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="device-toggle">
+        <button class="device-btn active" onclick="setDevice('desktop')">
+            <i class="bi bi-display"></i> Desktop
+        </button>
+        <button class="device-btn" onclick="setDevice('tablet')">
+            <i class="bi bi-tablet"></i> Tablet
+        </button>
+        <button class="device-btn" onclick="setDevice('mobile')">
+            <i class="bi bi-phone"></i> Mobile
+        </button>
+    </div>
+
+    <div class="browser-mockup device-desktop" id="preview-container">
+        <div class="browser-header">
+            <div class="browser-dots">
+                <div class="dot"></div>
+                <div class="dot"></div>
+                <div class="dot"></div>
+            </div>
+            <div class="address-bar">
+                https://www.uctel.co.uk/case-studies/{{ case_study.client_name|lower|replace(' ', '-') }}-mobile-connectivity-solution
+            </div>
+        </div>
+        
+        <div class="website-content">
+            <!-- UCtel Header -->
+            <div class="uctel-header">
+                <a href="#" class="uctel-logo">UCtel</a>
+            </div>
+            
+            <!-- Breadcrumb -->
+            <div class="breadcrumb">
+                <a href="#">Home</a> &gt; <a href="#">Case Studies</a> &gt; {{ case_study.title }}
+            </div>
+            
+            <!-- Main Content -->
+            <article>
+                <h1>{{ case_study.title }}</h1>
+                
+                {% for section in case_study.sections %}
+                <h2>{{ section.title }}</h2>
+                
+                {% if section.section_type == 'summary' %}
+                <div class="section-intro">
+                    {% if section.content is string %}
+                        {% for paragraph in section.content.split('\n\n') %}
+                            {% if paragraph.strip() %}
+                                <p>{{ paragraph.strip() }}</p>
+                            {% endif %}
+                        {% endfor %}
+                    {% else %}
+                        {{ section.content|safe }}
+                    {% endif %}
+                </div>
+                {% else %}
+                    {% if section.content is string %}
+                        {% for paragraph in section.content.split('\n\n') %}
+                            {% if paragraph.strip() %}
+                                {% if paragraph.strip().startswith('•') or paragraph.strip().startswith('-') %}
+                                    {% if not loop.first %}
+                                        </ul>
+                                    {% endif %}
+                                    <ul>
+                                        {% for item in paragraph.split('\n') %}
+                                            {% if item.strip() and (item.strip().startswith('•') or item.strip().startswith('-')) %}
+                                                <li>{{ item.strip()[1:].strip() }}</li>
+                                            {% endif %}
+                                        {% endfor %}
+                                    </ul>
+                                {% else %}
+                                    <p>{{ paragraph.strip() }}</p>
+                                {% endif %}
+                            {% endif %}
+                        {% endfor %}
+                    {% else %}
+                        {{ section.content|safe }}
+                    {% endif %}
+                {% endif %}
+                
+                {% endfor %}
+                
+                <!-- UCtel CTA Section -->
+                <div class="uctel-cta">
+                    <h3>Contact UCtel and unlock better connectivity today</h3>
+                    <p>Looking for a mobile signal solution for your business? UCtel provides bespoke mobile signal boosting solutions across the UK.</p>
+                    <a href="#" class="btn-uctel">Contact Us</a>
+                    <a href="#" class="btn-uctel">Learn More</a>
+                </div>
+            </article>
+        </div>
+    </div>
+
+    <script>
+        function setDevice(device) {
+            const container = document.getElementById('preview-container');
+            const buttons = document.querySelectorAll('.device-btn');
+            
+            // Remove all device classes
+            container.classList.remove('device-desktop', 'device-tablet', 'device-mobile');
+            
+            // Add the selected device class
+            container.classList.add(`device-${device}`);
+            
+            // Update button states
+            buttons.forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+        }
+    </script>
+</body>
+</html>
