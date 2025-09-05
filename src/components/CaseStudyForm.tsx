@@ -49,12 +49,12 @@ export function CaseStudyForm() {
   const [autoGenerateImage, setAutoGenerateImage] = useState(true)
   const [showImagePromptEditor, setShowImagePromptEditor] = useState(false)
   const [customImagePrompt, setCustomImagePrompt] = useState('')
-  const [imageOption, setImageOption] = useState<'ai' | 'upload' | 'none'>('ai')
-  const [uploadedImageFile, setUploadedImageFile] = useState<File | null>(null)
-  const [uploadedImageUrl, setUploadedImageUrl] = useState<string | null>(null)
-  const [isUploadingImage, setIsUploadingImage] = useState(false)
   const [isEditing, setIsEditing] = useState(false)
   const [editedContent, setEditedContent] = useState<GeneratedCaseStudy | null>(null)
+  const [imageOption, setImageOption] = useState<'ai' | 'upload' | 'none'>('ai')
+  const [uploadedImage, setUploadedImage] = useState<File | null>(null)
+  const [uploadedImageUrl, setUploadedImageUrl] = useState<string | null>(null)
+  const [isUploadingImage, setIsUploadingImage] = useState(false)
   
   const { register, handleSubmit, formState: { errors }, watch } = useForm<CaseStudyFormData>()
   
@@ -125,12 +125,7 @@ export function CaseStudyForm() {
         body: JSON.stringify({
           ...data,
           customPrompt: customPrompt || undefined,
-<<<<<<< HEAD
-          generateImage: imageOption === 'ai',
-          customImagePrompt: customImagePrompt || undefined
-=======
           ...imageSettings
->>>>>>> d13686da2ba90368ed3fd9c84c17f3c9a68ed270
         }),
       })
       
@@ -139,18 +134,10 @@ export function CaseStudyForm() {
       const result = await response.json()
       setGeneratedContent(result)
       
-<<<<<<< HEAD
-      // Handle image based on option
-      if (imageOption === 'ai' && result.imageUrl) {
-        setGeneratedImage(result.imageUrl)
-      } else if (imageOption === 'upload' && uploadedImageUrl) {
-        // Keep the uploaded image
-=======
       // Set the appropriate image based on the option
       if (imageOption === 'ai' && result.imageUrl) {
         setGeneratedImage(result.imageUrl)
       } else if (imageOption === 'upload' && uploadedImageUrl) {
->>>>>>> d13686da2ba90368ed3fd9c84c17f3c9a68ed270
         setGeneratedImage(uploadedImageUrl)
       } else {
         setGeneratedImage(null)
@@ -173,13 +160,6 @@ export function CaseStudyForm() {
     setPublishError('')
     
     try {
-<<<<<<< HEAD
-      const currentImageUrl = getCurrentImageUrl()
-      
-      // Include the current image URL if available
-      const publishData = {
-        ...generatedContent,
-=======
       // Use edited content if available, otherwise use original generated content
       const contentToPublish = editedContent || generatedContent
       
@@ -189,7 +169,6 @@ export function CaseStudyForm() {
       // Include the image URL if available
       const publishData = {
         ...contentToPublish,
->>>>>>> d13686da2ba90368ed3fd9c84c17f3c9a68ed270
         ...(currentImageUrl && { imageUrl: currentImageUrl })
       }
 
@@ -216,10 +195,6 @@ export function CaseStudyForm() {
     }
   }
 
-<<<<<<< HEAD
-  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-=======
   const handleEditContent = () => {
     if (generatedContent) {
       setEditedContent({ ...generatedContent })
@@ -265,23 +240,10 @@ export function CaseStudyForm() {
 
   const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0]
->>>>>>> d13686da2ba90368ed3fd9c84c17f3c9a68ed270
     if (!file) return
 
     // Validate file type
     if (!file.type.startsWith('image/')) {
-<<<<<<< HEAD
-      alert('Please select an image file.')
-      return
-    }
-
-    // Validate file size (5MB limit)
-    if (file.size > 5 * 1024 * 1024) {
-      alert('Image size must be less than 5MB.')
-      return
-    }
-
-=======
       alert('Please select an image file (PNG, JPG, etc.)')
       return
     }
@@ -299,32 +261,10 @@ export function CaseStudyForm() {
     setUploadedImageUrl(previewUrl)
 
     // Upload to WordPress if we want to store it there
->>>>>>> d13686da2ba90368ed3fd9c84c17f3c9a68ed270
     setIsUploadingImage(true)
     try {
       const formData = new FormData()
       formData.append('image', file)
-<<<<<<< HEAD
-      formData.append('altText', `${generatedContent?.title || 'Case Study'} image`)
-      formData.append('title', generatedContent?.title || 'Case Study Image')
-
-      const response = await fetch('/api/upload-image-to-wordpress', {
-        method: 'POST',
-        body: formData
-      })
-
-      if (!response.ok) {
-        throw new Error('Failed to upload image')
-      }
-
-      const result = await response.json()
-      setUploadedImageFile(file)
-      setUploadedImageUrl(result.url || result.imageUrl)
-      console.log('Image uploaded successfully:', result)
-    } catch (error) {
-      console.error('Error uploading image:', error)
-      alert('Failed to upload image. Please try again.')
-=======
 
       const response = await fetch('/api/upload-image-to-wordpress', {
         method: 'POST',
@@ -339,22 +279,11 @@ export function CaseStudyForm() {
       }
     } catch (error) {
       console.warn('Failed to upload to WordPress, using local preview:', error)
->>>>>>> d13686da2ba90368ed3fd9c84c17f3c9a68ed270
     } finally {
       setIsUploadingImage(false)
     }
   }
 
-<<<<<<< HEAD
-  const getCurrentImageUrl = () => {
-    if (imageOption === 'upload' && uploadedImageUrl) {
-      return uploadedImageUrl
-    }
-    if (imageOption === 'ai' && generatedImage) {
-      return generatedImage
-    }
-    return null
-=======
   const removeUploadedImage = () => {
     setUploadedImage(null)
     if (uploadedImageUrl) {
@@ -374,7 +303,6 @@ export function CaseStudyForm() {
       default:
         return null
     }
->>>>>>> d13686da2ba90368ed3fd9c84c17f3c9a68ed270
   }
 
   return (
@@ -527,58 +455,23 @@ export function CaseStudyForm() {
               Advanced Options
             </summary>
             <div className="p-6 space-y-4">
-              {/* Image Options */}
+              {/* Image Generation Options */}
               <div className="border-b border-gray-200 pb-4">
-                <h3 className="text-sm font-medium text-gray-700 mb-4">Image Options</h3>
-                <div className="space-y-3">
-                  <div className="flex items-center space-x-3">
-                    <input
-                      type="radio"
-                      id="imageAI"
-                      name="imageOption"
-                      value="ai"
-                      checked={imageOption === 'ai'}
-                      onChange={(e) => setImageOption('ai')}
-                      className="h-4 w-4 text-uctel-primary border-gray-300 focus:ring-uctel-primary"
-                    />
-                    <label htmlFor="imageAI" className="text-sm font-medium text-gray-700">
-                      Generate image with AI
-                    </label>
-                  </div>
-                  
-                  <div className="flex items-center space-x-3">
-                    <input
-                      type="radio"
-                      id="imageUpload"
-                      name="imageOption"
-                      value="upload"
-                      checked={imageOption === 'upload'}
-                      onChange={(e) => setImageOption('upload')}
-                      className="h-4 w-4 text-uctel-primary border-gray-300 focus:ring-uctel-primary"
-                    />
-                    <label htmlFor="imageUpload" className="text-sm font-medium text-gray-700">
-                      Upload my own image
-                    </label>
-                  </div>
-                  
-                  <div className="flex items-center space-x-3">
-                    <input
-                      type="radio"
-                      id="imageNone"
-                      name="imageOption"
-                      value="none"
-                      checked={imageOption === 'none'}
-                      onChange={(e) => setImageOption('none')}
-                      className="h-4 w-4 text-uctel-primary border-gray-300 focus:ring-uctel-primary"
-                    />
-                    <label htmlFor="imageNone" className="text-sm font-medium text-gray-700">
-                      No image
-                    </label>
-                  </div>
+                <div className="flex items-center space-x-3 mb-4">
+                  <input
+                    type="checkbox"
+                    id="autoGenerateImage"
+                    checked={autoGenerateImage}
+                    onChange={(e) => setAutoGenerateImage(e.target.checked)}
+                    className="h-4 w-4 text-uctel-primary border-gray-300 rounded focus:ring-uctel-primary"
+                  />
+                  <label htmlFor="autoGenerateImage" className="text-sm font-medium text-gray-700">
+                    Generate hero image automatically
+                  </label>
                 </div>
                 
-                {imageOption === 'ai' && (
-                  <div className="mt-4">
+                {autoGenerateImage && (
+                  <div>
                     <div className="flex items-center justify-between mb-2">
                       <label className="block text-sm font-medium text-gray-700">
                         Image Generation Prompt
@@ -611,36 +504,6 @@ export function CaseStudyForm() {
                         className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-uctel-primary focus:border-transparent text-sm"
                         placeholder="Describe the type of image you want generated..."
                       />
-                    )}
-                  </div>
-                )}
-                
-                {imageOption === 'upload' && (
-                  <div className="mt-4">
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Choose Image File
-                    </label>
-                    <input
-                      type="file"
-                      accept="image/*"
-                      onChange={handleImageUpload}
-                      className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-uctel-primary focus:border-transparent text-sm"
-                    />
-                    {uploadedImageFile && (
-                      <div className="mt-2 flex items-center space-x-2">
-                        <CheckCircle size={16} className="text-green-500" />
-                        <span className="text-sm text-gray-600">{uploadedImageFile.name}</span>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setUploadedImageFile(null)
-                            setUploadedImageUrl(null)
-                          }}
-                          className="text-red-500 hover:text-red-700"
-                        >
-                          <X size={14} />
-                        </button>
-                      </div>
                     )}
                   </div>
                 )}
