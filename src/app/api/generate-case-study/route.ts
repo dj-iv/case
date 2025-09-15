@@ -61,7 +61,18 @@ export async function POST(request: NextRequest) {
     }
 
     const completion = await completionPromise
-    const generatedText = completion.choices[0]?.message?.content || ''
+    let generatedText = completion.choices[0]?.message?.content || ''
+    // Post-process to avoid placeholder company names from models
+    const company = data.clientName?.trim()
+    if (company) {
+      const placeholders = [
+        'XYZ Corporation', 'XYZ Corp', 'ABC Company', 'Sample Company', 'ACME Corporation'
+      ]
+      for (const ph of placeholders) {
+        const re = new RegExp(ph.replace(/[-/\\^$*+?.()|[\]{}]/g, '\\$&'), 'g')
+        generatedText = generatedText.replace(re, company)
+      }
+    }
     
     // Parse the generated content into structured sections
   const sections = parseGeneratedContent(generatedText)
@@ -84,7 +95,18 @@ export async function POST(request: NextRequest) {
   sections.clientQuote = ensure(sections.clientQuote, `UCtel’s engineered solution transformed our mobile connectivity footprint—calls are reliable, data sessions are stable and staff productivity has measurably improved.`)
     
     // Generate WordPress-formatted content
-    const wordpressContent = generateWordPressContent(sections)
+    let wordpressContent = generateWordPressContent(sections)
+    if (company) {
+      const re = new RegExp(company.replace(/[-/\\^$*+?.()|[\]{}]/g, '\\$&'), 'g')
+      // Ensure consistent exact client name usage (idempotent replacement)
+      const placeholders = [
+        'XYZ Corporation', 'XYZ Corp', 'ABC Company', 'Sample Company', 'ACME Corporation'
+      ]
+      for (const ph of placeholders) {
+        const r = new RegExp(ph.replace(/[-/\\^$*+?.()|[\]{}]/g, '\\$&'), 'g')
+        wordpressContent = wordpressContent.replace(r, company)
+      }
+    }
     
     const imageUrl = imagePromise ? await imagePromise : null
 
