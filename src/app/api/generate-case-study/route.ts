@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import OpenAI from 'openai'
 import { GenerateCaseStudyRequest } from '@/types/case'
-import { buildDefaultCaseStudyPrompt, buildDefaultImagePrompt } from '@/lib/prompt'
+import { buildDefaultCaseStudyPrompt, buildDefaultImagePrompt, interpolateCustomPrompt } from '@/lib/prompt'
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
@@ -15,7 +15,7 @@ export async function POST(request: NextRequest) {
   const defaultPrompt = buildDefaultCaseStudyPrompt(data)
 
   const prompt = (data.customPrompt && data.customPrompt.trim().length > 50)
-    ? data.customPrompt
+    ? interpolateCustomPrompt(data.customPrompt, data)
     : defaultPrompt
 
     const completionPromise = openai.chat.completions.create({
