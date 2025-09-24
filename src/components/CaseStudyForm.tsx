@@ -55,8 +55,45 @@ export function CaseStudyForm() {
   const [uploadedImage, setUploadedImage] = useState<File | null>(null)
   const [uploadedImageUrl, setUploadedImageUrl] = useState<string | null>(null)
   const [isUploadingImage, setIsUploadingImage] = useState(false)
+  const [selectedTechnology, setSelectedTechnology] = useState('')
+  const [customTechnology, setCustomTechnology] = useState('')
+  const [selectedIndustry, setSelectedIndustry] = useState('')
+  const [customIndustry, setCustomIndustry] = useState('')
+  const [selectedChallenge, setSelectedChallenge] = useState('Poor mobile signal due to building construction.')
+  const [customChallenge, setCustomChallenge] = useState('Poor mobile signal due to building construction.')
+  const [selectedSolution, setSelectedSolution] = useState('A comprehensive mobile signal booster system was installed to resolve poor indoor coverage.')
+  const [customSolution, setCustomSolution] = useState('A comprehensive mobile signal booster system was installed to resolve poor indoor coverage.')
   
-  const { register, handleSubmit, formState: { errors }, watch } = useForm<CaseStudyFormData>()
+  const industryOptions = [
+    'Commercial Real Estate',
+    'Warehousing & Logistics',
+    'Retail & Shopping Centres',
+    'Hospitality & Leisure',
+    'Healthcare',
+    'Education',
+    'Construction',
+    'Manufacturing',
+    'Public Sector',
+    'Emergency Services',
+    'Residential',
+    'Custom'
+  ]
+
+  const challengeOptions = [
+    'Poor mobile signal due to building construction.',
+    'Lack of reliable mobile connectivity within the building.',
+    'Inconsistent and dropped calls, as well as slow data speeds inside the premises.',
+    'Custom'
+  ]
+
+  const solutionOptions = [
+    'A comprehensive mobile signal booster system was installed to resolve poor indoor coverage.',
+    'We deployed a custom-designed distributed antenna system (DAS) to ensure full building mobile coverage.',
+    'A professional mobile signal solution was implemented to provide strong and reliable connectivity.',
+    'Custom'
+  ]
+  
+  const { register, handleSubmit, formState: { errors }, watch, setValue } = useForm<CaseStudyFormData>()
   
   // Watch form fields to build a dynamic default prompt
   const wClientName = watch('clientName') || '[Client Name]'
@@ -68,7 +105,7 @@ export function CaseStudyForm() {
   const wTechnologies = watch('technologiesUsed')
   const wAdditionalContext = watch('additionalContext')
 
-  const buildDefaultPrompt = () => `Create a professional, detailed case study for UCtel (mobile signal boosting company) with the following information:\n\nClient: ${wClientName}\nIndustry: ${wIndustry}\nChallenge: ${wMainChallenge}\nSolution: ${wSolutionProvided}\n${wLocation ? `Location: ${wLocation}` : ''}\n${wProjectScale ? `Scale: ${wProjectScale}` : ''}\n${wTechnologies ? `Technologies: ${wTechnologies}` : ''}\n${wAdditionalContext ? `Additional Context: ${wAdditionalContext}` : ''}\n\nGenerate a comprehensive case study with these exact sections:\n\n**SUMMARY**\nWrite 1-2 detailed sentences explaining: the client's situation, the specific connectivity challenges they faced, UCtel's solution approach, and the overall impact/results achieved. Make it engaging and comprehensive.\n\n**THE CLIENT**\nWrite 1-2 sentences describing: the client organisation in detail, their industry position, location specifics, size/scale, what makes them unique, and why reliable connectivity was crucial for their operations.\n\n**THE CHALLENGES**\nWrite 1-2 sentences detailing: specific technical connectivity issues, coverage problems, user impact, business consequences, any unique environmental factors, regulatory considerations, and why these challenges were particularly difficult for this client.\n\n**THE SOLUTION**\nWrite 1-2 sentences explaining: UCtel's technical approach, specific equipment utilised (CEL-FI models, antenna systems, etc.), installation process, technical specifications, implementation timeline, partnerships involved, and why this solution was optimised for their needs.\n\n**THE RESULTS**\nWrite 1-2 sentences covering: specific improvements realised, measurable results, user feedback, business benefits, implementation timeline, client satisfaction, and any future-looking statements or calls to action.\n\n**SIDEBAR_CHALLENGE**\nWrite 1 sentence summarising the main connectivity challenge for the sidebar.\n\n**SIDEBAR_RESULTS**\nWrite 1 sentence summarising the key results and benefits realised for the sidebar.\n\n**CLIENT_QUOTE**\nCreate a realistic, compelling quote from the client expressing satisfaction with UCtel's solution and its business impact.\n\nWrite in a professional, technical tone suitable for B2B audiences. Use specific technical terms, mention measurable improvements, and include concrete details. Each section should be substantial and informative, similar to UCtel's existing case studies.`
+  const buildDefaultPrompt = () => `Create a professional, detailed case study for UCtel (mobile signal boosting company) with the following information:\n\nClient: ${wClientName}\nIndustry: ${wIndustry}\nChallenge: ${wMainChallenge}\nSolution: ${wSolutionProvided}\n${wLocation ? `Location: ${wLocation}` : ''}\n${wProjectScale ? `Scale: ${wProjectScale}` : ''}\n${wTechnologies ? `Technologies: ${wTechnologies}` : ''}\n${wAdditionalContext ? `Additional Context: ${wAdditionalContext}` : ''}\n\nGenerate a comprehensive case study with these exact sections:\n\n**SUMMARY**\nWrite 1-2 detailed sentences explaining: the client's situation, the specific connectivity challenges they faced, UCtel's solution approach, and the overall impact/results achieved. Make it engaging and comprehensive.\n\n**THE CLIENT**\nWrite 1-2 sentences describing: the client organisation in detail, their industry position, location specifics, size/scale, what makes them unique, and why reliable connectivity was crucial for their operations.\n\n**THE CHALLENGES**\nWrite 1-2 sentences detailing: specific technical connectivity issues, coverage problems, user impact, business consequences, any unique environmental factors, regulatory considerations, and why these challenges were particularly difficult for this client.\n\n**THE SOLUTION**\nWrite 1-2 sentences explaining: UCtel's technical approach, specific equipment utilised (CEL-FI models, antenna systems, etc.), installation process, technical specifications, implementation timeline, partnerships involved, and why this solution was optimised for their needs.\n\n**THE RESULTS**\nWrite 1-2 sentences covering: specific improvements realised, measurable results, user feedback, business benefits, implementation timeline, client satisfaction, and any future-looking statements or calls to action.\n\n**SIDEBAR_CHALLENGE**\nWrite 1 sentence summarising the main connectivity challenge for the sidebar.\n\n**SIDEBAR_RESULTS**\nWrite 1 sentence summarising the key results and benefits realised for the sidebar.\n\n**QUOTE**\nCreate a realistic, compelling statement about this specific installation/project, written from an industry observer's perspective. Write as clean text without quotation marks or attribution.\n\nWrite in a professional, technical tone suitable for B2B audiences. Use specific technical terms, mention measurable improvements, and include concrete details. Each section should be substantial and informative, similar to UCtel's existing case studies.`
 
   const buildDefaultImagePrompt = () => `Professional exterior photograph of ${wClientName} building in ${wLocation || 'modern urban setting'}, ${wIndustry} sector, corporate architecture, high quality, business photography style`
 
@@ -94,6 +131,9 @@ export function CaseStudyForm() {
   useEffect(() => {
     setIsGenerating(false)
     setIsPublishing(false)
+    // Set default form values
+    setValue('mainChallenge', 'Poor mobile signal due to building construction.')
+    setValue('solutionProvided', 'A comprehensive mobile signal booster system was installed to resolve poor indoor coverage.')
   }, [])
 
   const onSubmit = async (data: CaseStudyFormData) => {
@@ -343,11 +383,40 @@ export function CaseStudyForm() {
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Industry *
                   </label>
-                  <input
+                  <select
                     {...register('industry', { required: 'Industry is required' })}
+                    value={selectedIndustry || watch('industry') || ''}
+                    onChange={(e) => {
+                      const value = e.target.value
+                      setSelectedIndustry(value)
+                      if (value === 'Custom') {
+                        setValue('industry', customIndustry)
+                      } else {
+                        setValue('industry', value)
+                        setCustomIndustry('')
+                      }
+                    }}
                     className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-uctel-primary focus:border-transparent"
-                    placeholder="e.g., Healthcare, Education, Manufacturing"
-                  />
+                  >
+                    <option value="">Select an industry...</option>
+                    {industryOptions.map((option) => (
+                      <option key={option} value={option}>
+                        {option}
+                      </option>
+                    ))}
+                  </select>
+                  {selectedIndustry === 'Custom' && (
+                    <input
+                      type="text"
+                      value={customIndustry}
+                      onChange={(e) => {
+                        setCustomIndustry(e.target.value)
+                        setValue('industry', e.target.value)
+                      }}
+                      className="mt-2 w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-uctel-primary focus:border-transparent"
+                      placeholder="Enter custom industry"
+                    />
+                  )}
                   {errors.industry && (
                     <p className="text-red-500 text-sm mt-1">{errors.industry.message}</p>
                   )}
@@ -376,11 +445,32 @@ export function CaseStudyForm() {
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Main Challenge *
                 </label>
-                <textarea
+                <select
                   {...register('mainChallenge', { required: 'Main challenge is required' })}
-                  rows={3}
+                  value={selectedChallenge}
                   className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-uctel-primary focus:border-transparent"
-                  placeholder="Describe the primary connectivity or signal challenge the client faced"
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    setSelectedChallenge(value);
+                    setCustomChallenge(value);
+                    setValue('mainChallenge', value);
+                  }}
+                >
+                  {challengeOptions.map((option) => (
+                    <option key={option} value={option}>
+                      {option}
+                    </option>
+                  ))}
+                </select>
+                <textarea
+                  rows={3}
+                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-uctel-primary focus:border-transparent mt-2"
+                  placeholder="Edit or customize the selected challenge"
+                  value={customChallenge}
+                  onChange={(e) => {
+                    setCustomChallenge(e.target.value);
+                    setValue('mainChallenge', e.target.value);
+                  }}
                 />
                 {errors.mainChallenge && (
                   <p className="text-red-500 text-sm mt-1">{errors.mainChallenge.message}</p>
@@ -390,11 +480,32 @@ export function CaseStudyForm() {
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Solution Provided *
                 </label>
-                <textarea
+                <select
                   {...register('solutionProvided', { required: 'Solution is required' })}
-                  rows={3}
+                  value={selectedSolution}
                   className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-uctel-primary focus:border-transparent"
-                  placeholder="Describe the UCtel solution that was implemented"
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    setSelectedSolution(value);
+                    setCustomSolution(value);
+                    setValue('solutionProvided', value);
+                  }}
+                >
+                  {solutionOptions.map((option) => (
+                    <option key={option} value={option}>
+                      {option}
+                    </option>
+                  ))}
+                </select>
+                <textarea
+                  rows={3}
+                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-uctel-primary focus:border-transparent mt-2"
+                  placeholder="Edit or customize the selected solution"
+                  value={customSolution}
+                  onChange={(e) => {
+                    setCustomSolution(e.target.value);
+                    setValue('solutionProvided', e.target.value);
+                  }}
                 />
                 {errors.solutionProvided && (
                   <p className="text-red-500 text-sm mt-1">{errors.solutionProvided.message}</p>
@@ -424,10 +535,41 @@ export function CaseStudyForm() {
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Technologies Used
                   </label>
+                  <select
+                    value={selectedTechnology}
+                    onChange={(e) => {
+                      setSelectedTechnology(e.target.value)
+                      if (e.target.value !== 'Custom') {
+                        setValue('technologiesUsed', e.target.value)
+                        setCustomTechnology('')
+                      } else {
+                        setValue('technologiesUsed', customTechnology)
+                      }
+                    }}
+                    className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-uctel-primary focus:border-transparent"
+                  >
+                    <option value="">Select technology...</option>
+                    <option value="Nextivity CEL-FI QUATRA 4000e">Nextivity CEL-FI QUATRA 4000e</option>
+                    <option value="Nextivity CEL-FI GO G41">Nextivity CEL-FI GO G41</option>
+                    <option value="Nextivity CEL-FI GO G43">Nextivity CEL-FI GO G43</option>
+                    <option value="Nextivity CEL-FI QUATRA EVO">Nextivity CEL-FI QUATRA EVO</option>
+                    <option value="Nextivity CEL-FI QUATRA 100M">Nextivity CEL-FI QUATRA 100M</option>
+                    <option value="Custom">Custom</option>
+                  </select>
+                  {selectedTechnology === 'Custom' && (
+                    <input
+                      value={customTechnology}
+                      onChange={(e) => {
+                        setCustomTechnology(e.target.value)
+                        setValue('technologiesUsed', e.target.value)
+                      }}
+                      className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-uctel-primary focus:border-transparent mt-2"
+                      placeholder="Enter custom technology..."
+                    />
+                  )}
                   <input
                     {...register('technologiesUsed')}
-                    className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-uctel-primary focus:border-transparent"
-                    placeholder="e.g., CEL-FI GO, CEL-FI QUATRA, DAS"
+                    type="hidden"
                   />
                 </div>
               </div>
@@ -947,9 +1089,9 @@ export function CaseStudyForm() {
                   />
                 </div>
 
-                {/* Client Quote */}
+                {/* Anonymous Quote */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Client Quote</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Industry Quote</label>
                   <textarea
                     value={editedContent.previewQuote}
                     onChange={(e) => updateEditedContent('previewQuote', e.target.value)}

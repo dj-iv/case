@@ -28,7 +28,7 @@ export async function POST(request: NextRequest) {
         {
           role: "user",
           // Always append critical instructions even for custom prompts (unless user explicitly included them).
-          content: `${prompt}\nIMPORTANT: Output EVERY section. If unsure, infer plausible but realistic content. Place each section header on its own line exactly as in the instructions (e.g., SUMMARY, THE CLIENT, THE CHALLENGES, THE SOLUTION, THE RESULTS, SIDEBAR_CHALLENGE, SIDEBAR_RESULTS, CLIENT_QUOTE).`
+          content: `${prompt}\nIMPORTANT: Output EVERY section. If unsure, infer plausible but realistic content. Place each section header on its own line exactly as in the instructions (e.g., SUMMARY, THE CLIENT, THE CHALLENGES, THE SOLUTION, THE RESULTS, SIDEBAR_CHALLENGE, SIDEBAR_RESULTS, QUOTE).`
         }
       ],
       max_tokens: 2600,
@@ -92,7 +92,7 @@ export async function POST(request: NextRequest) {
 
   sections.sidebarChallenge = ensure(sections.sidebarChallenge, `Inconsistent indoor mobile coverage impacted call reliability, data performance and user productivity across key operational areas.`)
   sections.sidebarResults = ensure(sections.sidebarResults, `Engineered enhancement delivered stronger, more consistent multi‑carrier signal, improving communication quality and day‑to‑day efficiency.`)
-  sections.clientQuote = ensure(sections.clientQuote, `UCtel’s engineered solution transformed our mobile connectivity footprint—calls are reliable, data sessions are stable and staff productivity has measurably improved.`)
+      sections.clientQuote = ensure(sections.clientQuote, `UCtel's engineered solution demonstrates how targeted mobile connectivity improvements can transform operational efficiency and enhance productivity across commercial environments.`)
     
     // Generate WordPress-formatted content
     let wordpressContent = generateWordPressContent(sections)
@@ -151,7 +151,7 @@ function parseGeneratedContent(text: string) {
     sidebarResults: '',
     clientQuote: ''
   }
-  const headerRegex = /^\s*(?:\*\*)?(SUMMARY|THE CLIENT|THE CHALLENGES|THE SOLUTION|THE RESULTS|SIDEBAR_CHALLENGE|SIDEBAR_RESULTS|CLIENT_QUOTE)(?:\*\*)?\s*:?\s*$/i
+  const headerRegex = /^\s*(?:\*\*)?(SUMMARY|THE CLIENT|THE CHALLENGES|THE SOLUTION|THE RESULTS|SIDEBAR_CHALLENGE|SIDEBAR_RESULTS|QUOTE)(?:\*\*)?\s*:?\s*$/i
   const lines = text.split(/\r?\n/)
   let currentKey: keyof typeof sections | '' = ''
   for (const raw of lines) {
@@ -168,7 +168,7 @@ function parseGeneratedContent(text: string) {
         case 'THE RESULTS': currentKey = 'results'; break
         case 'SIDEBAR_CHALLENGE': currentKey = 'sidebarChallenge'; break
         case 'SIDEBAR_RESULTS': currentKey = 'sidebarResults'; break
-        case 'CLIENT_QUOTE': currentKey = 'clientQuote'; break
+        case 'QUOTE': currentKey = 'clientQuote'; break
         default: currentKey = ''
       }
       continue
