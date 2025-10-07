@@ -15,6 +15,7 @@ export interface GeneratedCaseStudyResult {
   title: string
   sections: CaseStudySections
   wordpressContent: string
+  industry: string
   sidebarContent: {
     challenge: string
     results: string

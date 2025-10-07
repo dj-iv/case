@@ -63,21 +63,26 @@ export function CaseStudyForm() {
   const [customChallenge, setCustomChallenge] = useState('Poor mobile signal due to building construction.')
   const [selectedSolution, setSelectedSolution] = useState('A comprehensive mobile signal booster system was installed to resolve poor indoor coverage.')
   const [customSolution, setCustomSolution] = useState('A comprehensive mobile signal booster system was installed to resolve poor indoor coverage.')
-  
-  const industryOptions = [
-    'Commercial Real Estate',
-    'Warehousing & Logistics',
-    'Retail & Shopping Centres',
-    'Hospitality & Leisure',
-    'Healthcare',
-    'Education',
-    'Construction',
-    'Manufacturing',
-    'Public Sector',
-    'Emergency Services',
-    'Residential',
-    'Custom'
-  ]
+  const [wordpressCategories, setWordpressCategories] = useState<{id: number, name: string, slug: string}[]>([])
+  const [isFetchingCategories, setIsFetchingCategories] = useState(true)
+
+  // Fetch WordPress categories on mount
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const response = await fetch('/api/wordpress-categories')
+        if (response.ok) {
+          const data = await response.json()
+          setWordpressCategories(data.categories || [])
+        }
+      } catch (error) {
+        console.error('Failed to fetch WordPress categories:', error)
+      } finally {
+        setIsFetchingCategories(false)
+      }
+    }
+    fetchCategories()
+  }, [])
 
   const challengeOptions = [
     'Poor mobile signal due to building construction.',
@@ -389,34 +394,20 @@ export function CaseStudyForm() {
                     onChange={(e) => {
                       const value = e.target.value
                       setSelectedIndustry(value)
-                      if (value === 'Custom') {
-                        setValue('industry', customIndustry)
-                      } else {
-                        setValue('industry', value)
-                        setCustomIndustry('')
-                      }
+                      setValue('industry', value)
                     }}
                     className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-uctel-primary focus:border-transparent"
+                    disabled={isFetchingCategories}
                   >
-                    <option value="">Select an industry...</option>
-                    {industryOptions.map((option) => (
-                      <option key={option} value={option}>
-                        {option}
+                    <option value="">
+                      {isFetchingCategories ? 'Loading categories...' : 'Select an industry...'}
+                    </option>
+                    {wordpressCategories.map((category) => (
+                      <option key={category.id} value={category.name}>
+                        {category.name}
                       </option>
                     ))}
                   </select>
-                  {selectedIndustry === 'Custom' && (
-                    <input
-                      type="text"
-                      value={customIndustry}
-                      onChange={(e) => {
-                        setCustomIndustry(e.target.value)
-                        setValue('industry', e.target.value)
-                      }}
-                      className="mt-2 w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-uctel-primary focus:border-transparent"
-                      placeholder="Enter custom industry"
-                    />
-                  )}
                   {errors.industry && (
                     <p className="text-red-500 text-sm mt-1">{errors.industry.message}</p>
                   )}

@@ -1,5 +1,35 @@
 ﻿import { NextRequest, NextResponse } from 'next/server'
 
+// Fetch WordPress category ID by name
+async function getCategoryIdByName(categoryName: string, wpApiUrl: string, auth: string): Promise<number | null> {
+  if (!categoryName) return null
+  
+  try {
+    const categoriesUrl = wpApiUrl.replace('/wp/v2/case', '/wp/v2/case_category')
+    // Search by name instead of slug
+    const response = await fetch(`${categoriesUrl}?search=${encodeURIComponent(categoryName)}&per_page=100`, {
+      headers: {
+        'Authorization': `Basic ${auth}`,
+        'Content-Type': 'application/json'
+      }
+    })
+    
+    if (response.ok) {
+      const categories = await response.json()
+      // Find exact match by name
+      const exactMatch = categories.find((cat: any) => cat.name === categoryName)
+      if (exactMatch) {
+        return exactMatch.id
+      }
+    }
+  } catch (error) {
+    console.log('Category fetch error:', error)
+  }
+  
+  return null
+}
+
+
 export async function POST(request: NextRequest) {
   try {
     // Get request data (if any) - improved error handling
@@ -18,6 +48,7 @@ export async function POST(request: NextRequest) {
 
     console.log('=== RECEIVED DATA DEBUG ===')
     console.log('Title:', requestData?.title)
+    console.log('Industry:', requestData?.industry)
     console.log('Sections:', requestData?.sections)
     console.log('SidebarContent:', requestData?.sidebarContent)
     console.log('ImagePrompt:', requestData?.imagePrompt)
@@ -150,10 +181,15 @@ export async function POST(request: NextRequest) {
       show_news: false
     })
 
+    // Fetch category ID based on industry name
+    const categoryId = requestData?.industry ? await getCategoryIdByName(requestData.industry, wpApiUrl, auth) : null
+    console.log(`Industry: ${requestData?.industry}, Category ID: ${categoryId}`)
+
     const basePostData = {
       content: content,
       status: 'draft',
       title: requestData?.title || "Test Case Study",
+      ...(categoryId && { case_category: [categoryId] }),
       ...(featuredImageId > 0 && {
         featured_media: featuredImageId,
         meta: {

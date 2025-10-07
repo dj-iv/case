@@ -120,6 +120,7 @@ export async function POST(request: NextRequest) {
         results: sections.results
       },
       wordpressContent,
+      industry: data.industry,
       sidebarContent: {
         challenge: sections.sidebarChallenge.trim() || sections.challenges.substring(0, 200) + '...',
         results: sections.sidebarResults.trim() || sections.results.substring(0, 200) + '...'
