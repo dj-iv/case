@@ -113,6 +113,15 @@ Ensure your user has permissions to:
 - Creates draft post with proper ACF fields
 - Get direct link to edit in WordPress admin
 
+## 🔐 Portal Authentication
+
+This app now expects users to arrive via the UCtel portal. The portal redirects to `/portal/callback` with a signed token, which creates the `uctel_case_session` cookie. Direct visits without a session redirect back to the portal login. Configure:
+
+```
+NEXT_PUBLIC_PORTAL_URL=https://portal.uctel.co.uk
+PORTAL_SIGNING_SECRET=shared-secret-from-portal
+```
+
 ## 🎨 Features vs Python Version
 
 | Feature | Python Flask | Next.js React | Winner |

@@ -13,12 +13,17 @@ export default function PreviewPage() {
     setCaseStudy({
       title: "Boosting connectivity at one of central London's most innovative universities",
       sections: {
-        summary: "In a university environment, students and staff need their mobile connections to be fast and reliable, no matter where they are on campus. University students are a data-hungry user base, and UCtel installed four CEL-FI QUATRA 1000 systems to provide the connectivity this community needed.",
-        client: "Northeastern University London is a leading university in St. Katharine Docks, London, specialising in interdisciplinary and experiential learning.",
-        challenges: "In the City of London, reliable connectivity was limited by location challenges, building materials dampening the signal, and the need for a solution that works with multiple mobile carriers.",
-        solution: "UCtel installed four CEL-FI QUATRA 1000 systems to boost coverage of all major mobile networks in the building, with CAT-6 cabling for optimal performance.",
-        results: "The system vastly improved mobile connection within the campus building's walls, providing all students and staff with consistently excellent mobile signal, regardless of which network they used."
-      }
+        summary:
+          "In a university environment, students and staff need their mobile connections to be fast and reliable, no matter where they are on campus. University students are a data-hungry user base, and UCtel installed four CEL-FI QUATRA 1000 systems to provide the connectivity this community needed.",
+        client:
+          'Northeastern University London is a leading university in St. Katharine Docks, London, specialising in interdisciplinary and experiential learning.',
+        challenges:
+          'In the City of London, reliable connectivity was limited by location challenges, building materials dampening the signal, and the need for a solution that works with multiple mobile carriers.',
+        solution:
+          'UCtel installed four CEL-FI QUATRA 1000 systems to boost coverage of all major mobile networks in the building, with CAT-6 cabling for optimal performance.',
+        results:
+          "The system vastly improved mobile connection within the campus building's walls, providing all students and staff with consistently excellent mobile signal, regardless of which network they used.",
+      },
     })
   }, [])
 
@@ -46,8 +51,8 @@ export default function PreviewPage() {
             <button
               onClick={() => setDeviceType('desktop')}
               className={`flex items-center px-4 py-2 rounded-lg transition-colors ${
-                deviceType === 'desktop' 
-                  ? 'bg-white text-uctel-blue' 
+                deviceType === 'desktop'
+                  ? 'bg-white text-uctel-blue'
                   : 'bg-uctel-blue-dark hover:bg-white hover:text-uctel-blue'
               }`}
             >
@@ -57,8 +62,8 @@ export default function PreviewPage() {
             <button
               onClick={() => setDeviceType('tablet')}
               className={`flex items-center px-4 py-2 rounded-lg transition-colors ${
-                deviceType === 'tablet' 
-                  ? 'bg-white text-uctel-blue' 
+                deviceType === 'tablet'
+                  ? 'bg-white text-uctel-blue'
                   : 'bg-uctel-blue-dark hover:bg-white hover:text-uctel-blue'
               }`}
             >
@@ -68,8 +73,8 @@ export default function PreviewPage() {
             <button
               onClick={() => setDeviceType('mobile')}
               className={`flex items-center px-4 py-2 rounded-lg transition-colors ${
-                deviceType === 'mobile' 
-                  ? 'bg-white text-uctel-blue' 
+                deviceType === 'mobile'
+                  ? 'bg-white text-uctel-blue'
                   : 'bg-uctel-blue-dark hover:bg-white hover:text-uctel-blue'
               }`}
             >
@@ -106,9 +111,13 @@ export default function PreviewPage() {
 
             {/* Breadcrumb */}
             <div className="text-sm text-gray-600 mb-6">
-              <a href="#" className="text-uctel-blue hover:underline">Home</a>
+              <a href="#" className="text-uctel-blue hover:underline">
+                Home
+              </a>
               {' > '}
-              <a href="#" className="text-uctel-blue hover:underline">Case Studies</a>
+              <a href="#" className="text-uctel-blue hover:underline">
+                Case Studies
+              </a>
               {' > '}
               {caseStudy.title}
             </div>
@@ -144,9 +153,7 @@ export default function PreviewPage() {
 
               {/* UCtel CTA Section */}
               <div className="bg-gradient-to-r from-uctel-blue to-uctel-blue-dark text-white p-8 rounded-lg text-center mt-12">
-                <h3 className="text-xl font-semibold mb-4">
-                  Contact UCtel and unlock better connectivity today
-                </h3>
+                <h3 className="text-xl font-semibold mb-4">Contact UCtel and unlock better connectivity today</h3>
                 <p className="mb-6 text-blue-100">
                   Looking for a mobile signal solution for your business? UCtel provides bespoke mobile signal boosting solutions across the UK.
                 </p>
