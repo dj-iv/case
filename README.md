@@ -41,7 +41,7 @@ LEGACY_STRONG_HEADINGS=true   # set to 'false' to remove <strong> wrappers insid
 npm run dev
 ```
 
-Visit `http://localhost:3000`
+Visit `http://localhost:3305`
 
 ### 4. Deploy to Vercel
 ```bash
@@ -121,6 +121,8 @@ This app now expects users to arrive via the UCtel portal. The portal redirects 
 NEXT_PUBLIC_PORTAL_URL=https://portal.uctel.co.uk
 PORTAL_SIGNING_SECRET=shared-secret-from-portal
 ```
+
+During local development you can opt out of the portal handshake by setting `PORTAL_DEV_BYPASS=1` (and optionally `PORTAL_DEV_BYPASS_COOKIE` for a custom placeholder cookie). The middleware only honours this flag outside production builds.
 
 ## 🎨 Features vs Python Version
 

@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
 import { getSessionCookieName } from '@/lib/sessionCookie'
 
-const PORTAL_URL = process.env.NEXT_PUBLIC_PORTAL_URL || process.env.PORTAL_URL || 'http://localhost:3000'
+const PORTAL_URL = process.env.NEXT_PUBLIC_PORTAL_URL || process.env.PORTAL_URL || 'http://localhost:3300'
 
 function buildPortalLoginUrl(targetHref: string): URL {
   const portalUrl = new URL('/login', PORTAL_URL)

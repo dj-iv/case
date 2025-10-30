@@ -4,7 +4,7 @@ import { redirect } from 'next/navigation'
 import { getSessionCookieName } from '@/lib/sessionCookie'
 import { decodeSessionCookie } from '@/lib/portalAuth'
 
-const PORTAL_URL = process.env.NEXT_PUBLIC_PORTAL_URL || process.env.PORTAL_URL || 'http://localhost:3001'
+const PORTAL_URL = process.env.NEXT_PUBLIC_PORTAL_URL || process.env.PORTAL_URL || 'http://localhost:3300'
 
 export default function ProtectedLayout({ children }: { children: ReactNode }) {
   const sessionCookie = cookies().get(getSessionCookieName())

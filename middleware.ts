@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 import { getSessionCookieName } from '@/lib/sessionCookie'
 
-const PORTAL_URL = process.env.NEXT_PUBLIC_PORTAL_URL || process.env.PORTAL_URL || 'http://localhost:3000'
+const PORTAL_URL = process.env.NEXT_PUBLIC_PORTAL_URL || process.env.PORTAL_URL || 'http://localhost:3300'
 
 const PUBLIC_PATHS = ['/healthz', '/portal/callback']
 
@@ -18,7 +18,24 @@ export function middleware(request: NextRequest) {
   }
 
   const sessionCookieName = getSessionCookieName()
-  if (request.cookies.has(sessionCookieName)) {
+  const hasSession = request.cookies.has(sessionCookieName)
+  const devBypassFlag = (process.env.PORTAL_DEV_BYPASS ?? '').toLowerCase()
+  const devBypassEnabled =
+    process.env.NODE_ENV !== 'production' && (devBypassFlag === '1' || devBypassFlag === 'true' || devBypassFlag === 'yes')
+
+  if (hasSession || devBypassEnabled) {
+    if (devBypassEnabled && !hasSession) {
+      const response = NextResponse.next()
+      const cookieValue = process.env.PORTAL_DEV_BYPASS_COOKIE ?? 'dev-bypass'
+      response.cookies.set({
+        name: sessionCookieName,
+        value: cookieValue,
+        path: '/',
+        sameSite: 'lax',
+        httpOnly: false,
+      })
+      return response
+    }
     return NextResponse.next()
   }
 

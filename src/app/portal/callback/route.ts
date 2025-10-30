@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server'
 import { createSessionCookie, verifyPortalToken } from '@/lib/portalAuth'
 
 const APP_ID = 'case'
-const PORTAL_URL = process.env.NEXT_PUBLIC_PORTAL_URL || process.env.PORTAL_URL || 'http://localhost:3000'
+const PORTAL_URL = process.env.NEXT_PUBLIC_PORTAL_URL || process.env.PORTAL_URL || 'http://localhost:3300'
 
 function sanitizeRedirect(target: string | null, origin: string): string {
   if (!target) return '/'

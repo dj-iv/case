@@ -48,7 +48,7 @@ GenerateCaseStudyRequest → GeneratedCaseStudyResult → WordPress ACF payload
 ## 🔧 Development Commands
 
 ```bash
-npm run dev          # Start development server (localhost:3000)
+npm run dev          # Start development server (localhost:3305)
 npm run build        # Production build with TypeScript checking
 npm run typecheck    # TypeScript validation only
 npm run clean        # Remove .next build cache
