@@ -68,6 +68,8 @@ export async function POST(request: NextRequest) {
 
     // Create Basic Auth header
     const auth = Buffer.from(`${wpUsername}:${wpPassword}`).toString('base64')
+    const publishStatus = requestData?.publishStatus === 'publish' ? 'publish' : 'draft'
+    const isDraft = publishStatus !== 'publish'
     
     // Clean content and prepare WordPress data
     let content = requestData?.wordpressContent || "Test content"
@@ -187,7 +189,7 @@ export async function POST(request: NextRequest) {
 
     const basePostData = {
       content: content,
-      status: 'draft',
+      status: publishStatus,
       title: requestData?.title || "Test Case Study",
       ...(categoryId && { case_category: [categoryId] }),
       ...(featuredImageId > 0 && {
@@ -339,12 +341,20 @@ export async function POST(request: NextRequest) {
       throw new Error(`Invalid JSON response from WordPress: ${jsonError instanceof Error ? jsonError.message : String(jsonError)}`)
     }
 
+    const successMessage = isDraft
+      ? 'Case study saved as a WordPress draft.'
+      : 'Case study published live on WordPress!'
+
+    const previewNote = isDraft
+      ? 'To preview the case study: 1) Open the draft in WordPress admin, 2) Click Save/Update, 3) Then preview will work properly'
+      : 'This case study is live at the link above.'
+
     return NextResponse.json({
       success: true,
-      message: 'Case study published to WordPress successfully!',
+      message: successMessage,
       url: result.link,
       id: result.id,
-      previewNote: 'To preview the case study: 1) Open the draft in WordPress admin, 2) Click Save/Update, 3) Then preview will work properly',
+      previewNote,
       features: {
         sidebarIncluded: !!requestData?.sidebarContent,
         imagePromptIncluded: !!requestData?.imagePrompt,

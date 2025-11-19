@@ -2,8 +2,9 @@
 
 import { useState, useEffect } from 'react'
 import { useForm } from 'react-hook-form'
-import { Loader2, Send, Eye, CheckCircle, X, Monitor, Tablet, Smartphone, Edit3, RefreshCw, Edit, Upload, Image as ImageIcon, Sparkles } from 'lucide-react'
+import { Loader2, Send, Eye, CheckCircle, X, Monitor, Tablet, Smartphone, Edit3, RefreshCw, Edit, Upload, Image as ImageIcon, Sparkles, Share2 } from 'lucide-react'
 import UCtelLogo from './UCtelLogo'
+import { generateLinkedInCaption } from '@/lib/linkedinTemplate'
 
 interface CaseStudyFormData {
   clientName: string
@@ -33,6 +34,7 @@ interface GeneratedCaseStudy {
   }
   previewQuote: string
   imagePrompt: string
+  imageUrl?: string
 }
 
 export function CaseStudyForm() {
@@ -65,6 +67,17 @@ export function CaseStudyForm() {
   const [customSolution, setCustomSolution] = useState('A comprehensive mobile signal booster system was installed to resolve poor indoor coverage.')
   const [wordpressCategories, setWordpressCategories] = useState<{id: number, name: string, slug: string}[]>([])
   const [isFetchingCategories, setIsFetchingCategories] = useState(true)
+  const [publishToWordpress, setPublishToWordpress] = useState(true)
+  const [wordpressPublishMode, setWordpressPublishMode] = useState<'draft' | 'publish'>('draft')
+  const [shareToLinkedIn, setShareToLinkedIn] = useState(false)
+  const [linkedinCaption, setLinkedinCaption] = useState('')
+  const [linkedinCaptionTouched, setLinkedinCaptionTouched] = useState(false)
+  const [isPostingToLinkedIn, setIsPostingToLinkedIn] = useState(false)
+  const [linkedinStatus, setLinkedinStatus] = useState<'idle' | 'success' | 'error'>('idle')
+  const [linkedinError, setLinkedinError] = useState('')
+  const [linkedinPostUrn, setLinkedinPostUrn] = useState<string | null>(null)
+  const [wordpressPublishResult, setWordpressPublishResult] = useState<{ url?: string; id?: number } | null>(null)
+  const [existingCaseStudyUrl, setExistingCaseStudyUrl] = useState('')
 
   // Fetch WordPress categories on mount
   useEffect(() => {
@@ -114,6 +127,44 @@ export function CaseStudyForm() {
 
   const buildDefaultImagePrompt = () => `Professional exterior photograph of ${wClientName} building in ${wLocation || 'modern urban setting'}, ${wIndustry} sector, corporate architecture, high quality, business photography style`
 
+  const resolveClientName = () => {
+    const trimmed = (wClientName || '').trim()
+    if (!trimmed || trimmed === '[Client Name]') return undefined
+    return trimmed
+  }
+
+  const resolveIndustry = () => {
+    const trimmed = (wIndustry || '').trim()
+    if (!trimmed || trimmed === '[Industry]') return undefined
+    return trimmed
+  }
+
+  const resolveBuildingType = () => {
+    const trimmed = (wProjectScale || '').trim()
+    return trimmed || undefined
+  }
+
+  const normalizeLink = (value?: string) => {
+    const trimmed = value?.trim()
+    if (!trimmed) return ''
+    if (/^https?:\/\//i.test(trimmed)) return trimmed
+    return `https://${trimmed.replace(/^\/+/, '')}`
+  }
+
+  const buildLinkedInCaption = (content: GeneratedCaseStudy, permalink?: string) => {
+    return generateLinkedInCaption({
+      title: content.title,
+      summary: content.sections.summary,
+      challenges: content.sections.challenges,
+      solution: content.sections.solution,
+      results: content.sections.results,
+      link: permalink ? normalizeLink(permalink) : undefined,
+      clientName: resolveClientName(),
+      industry: resolveIndustry(),
+      buildingType: resolveBuildingType()
+    })
+  }
+
   // When opening the prompt editor for the first time (and empty), populate with default
   useEffect(() => {
     if (showPromptEditor && !customPrompt) {
@@ -139,7 +190,36 @@ export function CaseStudyForm() {
     // Set default form values
     setValue('mainChallenge', 'Poor mobile signal due to building construction.')
     setValue('solutionProvided', 'A comprehensive mobile signal booster system was installed to resolve poor indoor coverage.')
-  }, [])
+  }, [setValue])
+
+  useEffect(() => {
+    if (generatedContent) {
+      setLinkedinCaption(buildLinkedInCaption(generatedContent))
+      setLinkedinCaptionTouched(false)
+      setLinkedinStatus('idle')
+      setLinkedinError('')
+      setLinkedinPostUrn(null)
+      setWordpressPublishResult(null)
+    }
+  }, [generatedContent])
+
+  useEffect(() => {
+    if (wordpressPublishResult?.url && generatedContent && !linkedinCaptionTouched) {
+      setLinkedinCaption(buildLinkedInCaption(generatedContent, normalizeLink(wordpressPublishResult.url)))
+    }
+  }, [wordpressPublishResult, generatedContent, linkedinCaptionTouched])
+
+  useEffect(() => {
+    if (
+      shareToLinkedIn &&
+      !publishToWordpress &&
+      generatedContent &&
+      existingCaseStudyUrl.trim() &&
+      !linkedinCaptionTouched
+    ) {
+      setLinkedinCaption(buildLinkedInCaption(generatedContent, normalizeLink(existingCaseStudyUrl)))
+    }
+  }, [shareToLinkedIn, publishToWordpress, generatedContent, existingCaseStudyUrl, linkedinCaptionTouched])
 
   const onSubmit = async (data: CaseStudyFormData) => {
     setIsGenerating(true)
@@ -197,20 +277,107 @@ export function CaseStudyForm() {
     }
   }
 
-  const publishToWordPress = async () => {
+  const publishToLinkedIn = async (permalink: string) => {
     if (!generatedContent) return
-    
+    setIsPostingToLinkedIn(true)
+    setLinkedinStatus('idle')
+    setLinkedinError('')
+    try {
+      const response = await fetch('/api/post-to-linkedin', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          title: generatedContent.title,
+          summary: generatedContent.sections.summary,
+          challenges: generatedContent.sections.challenges,
+          solution: generatedContent.sections.solution,
+          results: generatedContent.sections.results,
+          permalink,
+          customCaption: linkedinCaptionTouched ? linkedinCaption : undefined,
+          clientName: resolveClientName(),
+          industry: resolveIndustry(),
+          buildingType: resolveBuildingType()
+        })
+      })
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => null)
+        throw new Error(errorData?.details || errorData?.error || 'Failed to publish to LinkedIn')
+      }
+
+      const result = await response.json()
+      setLinkedinStatus('success')
+      setLinkedinPostUrn(result.linkedInPostUrn || null)
+      return result
+    } catch (error) {
+      console.error('Error publishing to LinkedIn:', error)
+      setLinkedinStatus('error')
+      setLinkedinError(error instanceof Error ? error.message : String(error))
+      return null
+    } finally {
+      setIsPostingToLinkedIn(false)
+    }
+  }
+
+  const handlePublish = async () => {
+    if (!generatedContent) return
+    if (!publishToWordpress && !shareToLinkedIn) {
+      setPublishStatus('error')
+      setPublishError('Select at least one destination before publishing.')
+      return
+    }
+
     setIsPublishing(true)
+    setLinkedinStatus('idle')
+    setLinkedinError('')
+    setLinkedinPostUrn(null)
+
+    try {
+      let permalink: string | undefined
+
+      if (publishToWordpress) {
+        const wpResult = await publishToWordpressDraft().catch(() => null)
+        permalink = wpResult?.url
+        if (!wpResult) {
+          // WordPress failed; stop if LinkedIn requires WP link and none provided
+          if (shareToLinkedIn && !existingCaseStudyUrl.trim()) {
+            return
+          }
+        }
+      }
+
+      if (shareToLinkedIn) {
+        const linkForLinkedIn = normalizeLink(permalink || existingCaseStudyUrl || '')
+        if (!linkForLinkedIn) {
+          setLinkedinStatus('error')
+          setLinkedinError('Provide an existing case study URL before posting to LinkedIn.')
+          return
+        }
+        if (!permalink && !linkedinCaptionTouched) {
+          setLinkedinCaption(buildLinkedInCaption(generatedContent, linkForLinkedIn))
+        }
+        await publishToLinkedIn(linkForLinkedIn)
+      }
+    } finally {
+      setIsPublishing(false)
+    }
+  }
+
+  const publishToWordpressDraft = async () => {
+    if (!generatedContent) return null
+
     setPublishStatus('idle')
     setPublishError('')
-    
+    setWordpressPublishResult(null)
+    setLinkedinPostUrn(null)
+
     try {
       const currentImageUrl = getCurrentImageUrl()
-      
-      // Include the current image URL if available
+
       const publishData = {
         ...generatedContent,
-        ...(currentImageUrl && { imageUrl: currentImageUrl })
+        ...(currentImageUrl && { imageUrl: currentImageUrl }),
+        publishStatus: wordpressPublishMode
       }
 
       const response = await fetch('/api/publish-to-wordpress', {
@@ -218,21 +385,25 @@ export function CaseStudyForm() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(publishData),
       })
-      
+
       if (!response.ok) {
         const errorData = await response.json()
         throw new Error(errorData.details || errorData.error || 'Failed to publish to WordPress')
       }
-      
+
       const result = await response.json()
       setPublishStatus('success')
+      setWordpressPublishResult(result)
+      if (result?.url) {
+        setExistingCaseStudyUrl(normalizeLink(result.url))
+      }
       console.log('Published to WordPress:', result.url)
+      return result
     } catch (error) {
       console.error('Error publishing to WordPress:', error)
       setPublishError(error instanceof Error ? error.message : String(error))
       setPublishStatus('error')
-    } finally {
-      setIsPublishing(false)
+      throw error
     }
   }
 
@@ -337,7 +508,7 @@ export function CaseStudyForm() {
   const getCurrentImageUrl = () => {
     switch (imageOption) {
       case 'ai':
-        return generatedImage
+        return generatedImage || generatedContent?.imageUrl || null
       case 'upload':
         return uploadedImageUrl
       case 'none':
@@ -861,7 +1032,7 @@ export function CaseStudyForm() {
                 </button>
                 
                 <button
-                  onClick={publishToWordPress}
+                  onClick={handlePublish}
                   disabled={isPublishing}
                   className="flex-1 bg-uctel-secondary text-white py-3 px-6 rounded-lg font-medium hover:bg-orange-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2"
                 >
@@ -873,14 +1044,18 @@ export function CaseStudyForm() {
                   ) : (
                     <>
                       <Send size={18} />
-                      <span>Publish to WordPress</span>
+                      <span>
+                        {publishToWordpress && shareToLinkedIn && 'Publish to WordPress & LinkedIn'}
+                        {publishToWordpress && !shareToLinkedIn && 'Publish to WordPress'}
+                        {!publishToWordpress && shareToLinkedIn && 'Post to LinkedIn'}
+                      </span>
                     </>
                   )}
                 </button>
               </div>
 
               {/* Publish Status */}
-              {publishStatus === 'success' && (
+              {publishToWordpress && publishStatus === 'success' && (
                 <div className="mt-4 p-4 bg-green-50 border border-green-200 rounded-lg">
                   <div className="flex items-center space-x-2 text-green-800">
                     <CheckCircle size={20} />
@@ -889,7 +1064,7 @@ export function CaseStudyForm() {
                 </div>
               )}
 
-              {publishStatus === 'error' && (
+              {publishToWordpress && publishStatus === 'error' && (
                 <div className="mt-4 p-4 bg-red-50 border border-red-200 rounded-lg">
                   <div className="flex items-center space-x-2 text-red-800">
                     <X size={20} />
@@ -897,6 +1072,132 @@ export function CaseStudyForm() {
                   </div>
                 </div>
               )}
+
+              <div className="mt-6 border-t pt-6 space-y-4">
+                <p className="text-sm font-semibold text-gray-900">Publish destinations</p>
+                <div className="space-y-3">
+                  <label className="flex items-start space-x-3 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      className="h-5 w-5 rounded border-gray-300 text-uctel-primary focus:ring-uctel-primary"
+                      checked={publishToWordpress}
+                      onChange={(event) => setPublishToWordpress(event.target.checked)}
+                    />
+                    <div>
+                      <p className="text-sm font-medium text-gray-900">Publish to WordPress</p>
+                      <p className="text-xs text-gray-600 mt-1">Creates the full case study with Gutenberg blocks, sidebar content, and media.</p>
+                    </div>
+                  </label>
+
+                  {publishToWordpress && (
+                    <div className="ml-8 space-y-2">
+                      <label className="flex items-center space-x-2 text-sm text-gray-700">
+                        <input
+                          type="radio"
+                          name="wordpress-publish-mode"
+                          value="draft"
+                          checked={wordpressPublishMode === 'draft'}
+                          onChange={() => setWordpressPublishMode('draft')}
+                          className="text-uctel-primary focus:ring-uctel-primary"
+                        />
+                        <span>Save as draft (review before going live)</span>
+                      </label>
+                      <label className="flex items-center space-x-2 text-sm text-gray-700">
+                        <input
+                          type="radio"
+                          name="wordpress-publish-mode"
+                          value="publish"
+                          checked={wordpressPublishMode === 'publish'}
+                          onChange={() => setWordpressPublishMode('publish')}
+                          className="text-uctel-primary focus:ring-uctel-primary"
+                        />
+                        <span>Publish immediately (visible on site)</span>
+                      </label>
+                    </div>
+                  )}
+
+                  <label className="flex items-start space-x-3 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      className="h-5 w-5 rounded border-gray-300 text-uctel-primary focus:ring-uctel-primary"
+                      checked={shareToLinkedIn}
+                      onChange={(event) => {
+                        const enabled = event.target.checked
+                        setShareToLinkedIn(enabled)
+                        if (enabled && generatedContent && !linkedinCaption) {
+                          setLinkedinCaption(buildLinkedInCaption(generatedContent, wordpressPublishResult?.url || existingCaseStudyUrl || undefined))
+                        }
+                      }}
+                    />
+                    <div>
+                      <div className="flex items-center space-x-2">
+                        <Share2 size={18} className="text-uctel-primary" />
+                        <p className="text-sm font-medium text-gray-900">Share on UCtel&apos;s LinkedIn page</p>
+                      </div>
+                      <p className="text-xs text-gray-600 mt-1">Posts a summary with a link to the live case study.</p>
+                    </div>
+                  </label>
+                </div>
+
+                {shareToLinkedIn && !publishToWordpress && (
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium text-gray-700">Case study URL to include in LinkedIn post</label>
+                    <input
+                      type="url"
+                      value={existingCaseStudyUrl}
+                      onChange={(event) => setExistingCaseStudyUrl(event.target.value)}
+                      placeholder="https://www.uctel.co.uk/case/your-case-study"
+                      className="w-full border border-gray-300 rounded-lg p-3 focus:ring-uctel-primary focus:border-uctel-primary"
+                    />
+                    <p className="text-xs text-gray-500">Paste the live WordPress permalink for the existing case study.</p>
+                  </div>
+                )}
+
+                {shareToLinkedIn && (
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium text-gray-700">LinkedIn caption</label>
+                    <textarea
+                      value={linkedinCaption}
+                      onChange={(event) => {
+                        setLinkedinCaption(event.target.value)
+                        setLinkedinCaptionTouched(true)
+                      }}
+                      rows={5}
+                      className="w-full border border-gray-300 rounded-lg p-3 focus:ring-uctel-primary focus:border-uctel-primary"
+                      placeholder="Write an intro for LinkedIn readers"
+                    />
+                    <p className="text-xs text-gray-500">Tip: Keep it to 3 short paragraphs. The case study link is included automatically.</p>
+
+                    {linkedinStatus === 'success' && (
+                      <div className="p-3 bg-green-50 border border-green-200 rounded-lg flex items-center space-x-2 text-green-800">
+                        <CheckCircle size={18} />
+                        <div>
+                          <p className="text-sm font-medium">LinkedIn post created successfully.</p>
+                          {linkedinPostUrn && <p className="text-xs">Post URN: {linkedinPostUrn}</p>}
+                        </div>
+                      </div>
+                    )}
+
+                    {linkedinStatus === 'error' && (
+                      <div className="p-3 bg-red-50 border border-red-200 rounded-lg flex items-center space-x-2 text-red-800">
+                        <X size={18} />
+                        <div>
+                          <p className="text-sm font-medium">LinkedIn posting failed.</p>
+                          <p className="text-xs">{linkedinError}</p>
+                        </div>
+                      </div>
+                    )}
+
+                    {shareToLinkedIn && (isPostingToLinkedIn || linkedinStatus === 'idle') && isPublishing && (
+                      <div className="flex items-center space-x-2 text-sm text-gray-600">
+                        <Loader2 className="animate-spin" size={16} />
+                        <span>Preparing LinkedIn post...</span>
+                      </div>
+                    )}
+
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         )}
